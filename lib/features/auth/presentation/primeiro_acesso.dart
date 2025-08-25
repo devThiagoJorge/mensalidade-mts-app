@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mensalidade_mts_app/core/components/login/app_text_styles_login.dart';
 import 'package:mensalidade_mts_app/features/auth/presentation/login_page.dart';
+import 'package:mensalidade_mts_app/features/auth/providers/primeiro_acesso_provider.dart';
+import 'package:provider/provider.dart';
 
 class PrimeiroAcesso extends StatefulWidget {
   const PrimeiroAcesso({super.key});
@@ -29,6 +31,12 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
   void initState() {
     super.initState();
     _resetarEstados();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        context.read<PrimeiroAcessoProvider>();
+      }
+    });
   }
 
   void _resetarEstados() {
@@ -43,21 +51,78 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
     return senhaController.text == confirmacaoController.text;
   }
 
-  void _avancar() {
-    if (formKey.currentState!.validate()) {
-      if (etapa < 3) {
-        setState(() => etapa++);
-      } else if (etapa == 3 && senhaIgual()) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
-        );
-      }
+  Future<void> avancar(PrimeiroAcessoProvider provider) async {
+    if (!formKey.currentState!.validate()) return;
+
+    switch (etapa) {
+      case 1:
+        await provider.solicitarPrimeiroAcesso(emailController.text);
+        if (provider.error == null && provider.response?.success == true) {
+          setState(() => etapa++);
+          _mostarSucesso(provider.response!.message);
+        } else {
+          _mostrarErro(provider.error ?? 'Erro inesperado');
+        }
+        break;
+
+      case 2:
+        await provider.validarCodigo(codigoController.text);
+        if (codigoController.text.length == 6) {
+          setState(() => etapa++);
+          _mostarSucesso(provider.response!.message);
+        } else {
+          _mostrarErro(provider.error ?? 'Erro inesperado');
+        }
+        break;
+
+      case 3:
+        if (senhaIgual()) {
+          await provider.definirSenha(
+            emailController.text,
+            senhaController.text,
+            codigoController.text,
+          );
+
+          if (provider.error == null && provider.response?.success == true) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              }
+            });
+          }
+        } else {
+          _mostrarErro(provider.error ?? 'Erro inesperado');
+        }
+        break;
     }
+  }
+
+  void _mostrarErro(String mensagem) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mensagem), backgroundColor: Colors.red),
+      );
+    });
+  }
+
+  void _mostarSucesso(String mensagem) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(mensagem),
+          backgroundColor: AppTextStylesLogin.rotaractColor,
+        ),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<PrimeiroAcessoProvider>(context);
+
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -71,106 +136,16 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
               ),
               const SizedBox(height: 60),
 
-              // Etapa 1
-              if (etapa == 1) ...[
-                SizedBox(
-                  width: 360,
-                  child: TextFormField(
-                    controller: emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'Informe o seu e-mail',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Informe seu e-mail';
-                      }
-                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                        return 'E-mail inválido';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-              ],
-
-              // Etapa 2
-              if (etapa == 2) ...[
-                SizedBox(
-                  width: 360,
-                  child: TextFormField(
-                    controller: codigoController,
-                    decoration: const InputDecoration(
-                      labelText: 'Código',
-                      hintText: 'Informe o código recebido',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Informe o código';
-                      }
-                      if (value.length < 6) {
-                        return 'O código deve ter 6 dígitos';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-              ],
-
-              // Etapa 3
+              if (etapa == 1) ...[_campoEmail()],
+              if (etapa == 2) ...[_campoCodigo()],
               if (etapa == 3) ...[
-                SizedBox(
-                  width: 360,
-                  child: TextFormField(
-                    controller: senhaController,
-                    decoration: const InputDecoration(
-                      labelText: 'Senha',
-                      hintText: 'Defina sua senha',
-                      border: OutlineInputBorder(),
-                    ),
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Informe uma senha';
-                      }
-                      if (value.length < 6) {
-                        return 'A senha deve ter pelo menos 6 caracteres';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
+                _campoSenha(),
                 const SizedBox(height: 20),
-                SizedBox(
-                  width: 360,
-                  child: TextFormField(
-                    controller: confirmacaoController,
-                    decoration: const InputDecoration(
-                      labelText: 'Confirme a sua senha',
-                      hintText: 'Confirme a sua senha',
-                      border: OutlineInputBorder(),
-                    ),
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Confirme a senha';
-                      }
-                      if (value != senhaController.text) {
-                        return 'As senhas não coincidem';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
+                _campoConfirmacao(),
               ],
 
               const SizedBox(height: 20),
 
-              // Botão
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -179,16 +154,17 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
                   backgroundColor: AppTextStylesLogin.rotaractColor,
                   minimumSize: const Size(360, 55),
                 ),
-                onPressed: _avancar,
-                child: const Text(
-                  'Avançar',
-                  style: AppTextStylesLogin.buttonLoginStyle,
-                ),
+                onPressed: () => avancar(provider),
+                child: provider.loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Avançar',
+                        style: AppTextStylesLogin.buttonLoginStyle,
+                      ),
               ),
 
-              const SizedBox(height: 60),
+              const SizedBox(height: 20),
 
-              // Painel
               Card(
                 color: AppTextStylesLogin.backgroundPainelInformativoColor,
                 child: SizedBox(
@@ -213,4 +189,92 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
       ),
     );
   }
+
+  Widget _campoEmail() => SizedBox(
+    width: 360,
+    child: TextFormField(
+      controller: emailController,
+      decoration: const InputDecoration(
+        labelText: 'Email',
+        hintText: 'Informe o seu e-mail',
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.emailAddress,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Informe seu e-mail';
+        }
+        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+          return 'E-mail inválido';
+        }
+        return null;
+      },
+    ),
+  );
+
+  Widget _campoCodigo() => SizedBox(
+    width: 360,
+    child: TextFormField(
+      controller: codigoController,
+      decoration: const InputDecoration(
+        labelText: 'Código',
+        hintText: 'Informe o código recebido',
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.number,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Informe o código';
+        }
+        if (value.length < 6) {
+          return 'O código deve ter 6 dígitos';
+        }
+        return null;
+      },
+    ),
+  );
+
+  Widget _campoSenha() => SizedBox(
+    width: 360,
+    child: TextFormField(
+      controller: senhaController,
+      decoration: const InputDecoration(
+        labelText: 'Senha',
+        hintText: 'Defina sua senha',
+        border: OutlineInputBorder(),
+      ),
+      obscureText: true,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Informe uma senha';
+        }
+        if (value.length < 6) {
+          return 'A senha deve ter pelo menos 6 caracteres';
+        }
+        return null;
+      },
+    ),
+  );
+
+  Widget _campoConfirmacao() => SizedBox(
+    width: 360,
+    child: TextFormField(
+      controller: confirmacaoController,
+      decoration: const InputDecoration(
+        labelText: 'Confirme a sua senha',
+        hintText: 'Confirme a sua senha',
+        border: OutlineInputBorder(),
+      ),
+      obscureText: true,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Confirme a senha';
+        }
+        if (value != senhaController.text) {
+          return 'As senhas não coincidem';
+        }
+        return null;
+      },
+    ),
+  );
 }
