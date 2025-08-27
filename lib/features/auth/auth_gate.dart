@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mensalidade_mts_app/features/associados/presentation/associado_home_page.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
 import 'package:mensalidade_mts_app/features/auth/presentation/login_page.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +23,7 @@ class AuthGate extends StatelessWidget {
 
         switch (provider.user!.role) {
           case 'Associado':
-            return const Center(child: Text('Permissão Associado'));
+            return const AssociadoHomePage();
           case 'Tesoureiro':
             return const Center(child: Text('Permissão Tesoureiro'));
           default:
