@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mensalidade_mts_app/core/components/login/app_text_styles_login.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
 import 'package:mensalidade_mts_app/features/auth/presentation/primeiro_acesso.dart';
@@ -11,11 +12,15 @@ class LoginPage extends StatelessWidget {
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  // Storage seguro
+  final storage = const FlutterSecureStorage();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Consumer<AuthProvider>(
         builder: (context, provider, child) {
+          // Mostra erro como texto
           if (provider.error != null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -27,14 +32,15 @@ class LoginPage extends StatelessWidget {
             });
           }
 
-          if (provider.user != null) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Bem-vindo, ${provider.user!.nome}!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+          // Se logou com sucesso
+          if (provider.user != null && provider.error != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              // Salva o token e a permissão do usuário
+              await storage.write(key: 'token', value: provider.user!.token);
+              await storage.write(key: 'role', value: provider.user!.role);
+
+              // Redireciona para AuthGate
+              Navigator.pushReplacementNamed(context, '/auth');
             });
           }
 
@@ -45,10 +51,7 @@ class LoginPage extends StatelessWidget {
               child: Column(
                 children: [
                   Center(
-                    child: Image.asset(
-                      '../../assets/images/logo.png',
-                      height: 160,
-                    ),
+                    child: Image.asset('assets/images/logo.png', height: 160),
                   ),
                   const Text(
                     'Bem-vindo ao Mensalidade MTS!',
