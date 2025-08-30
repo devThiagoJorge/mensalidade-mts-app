@@ -20,18 +20,16 @@ class AuthProvider extends ChangeNotifier {
   String? get error => _error;
   bool get loading => _loading;
 
-  Future<void> _loadFromStorage() async {
+  Future<void> loadFromStorage() async {
     _token = await _storage.read(key: 'token');
     final role = await _storage.read(key: 'role');
+    final nome = await _storage.read(key: 'nome');
+    final id = await _storage.read(key: 'id');
 
-    if (_token != null && role != null) {
-      _user = User(
-        token: user!.token,
-        nome: user!.nome,
-        role: role,
-        id: user!.id,
-      );
+    if (_token != null && role != null && nome != null && id != null) {
+      _user = User(token: _token!, nome: nome, role: role, id: int.parse(id));
     }
+
     notifyListeners();
   }
 

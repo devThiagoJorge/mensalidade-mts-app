@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mensalidade_mts_app/core/components/associado/home_page_styles.dart';
+import 'package:mensalidade_mts_app/core/componentsStyle/associado/home_page_styles.dart';
+import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
+import 'package:mensalidade_mts_app/features/associados/providers/associado_provider.dart';
+import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
+import 'package:mensalidade_mts_app/features/pagamentos/models/pagamento.dart';
+import 'package:provider/provider.dart';
 
 class AssociadoHomePage extends StatefulWidget {
   const AssociadoHomePage({super.key});
@@ -9,68 +14,150 @@ class AssociadoHomePage extends StatefulWidget {
 }
 
 class _AssociadoHomePageState extends State<AssociadoHomePage> {
+  List<Pagamento> pagamentos = [];
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() async {
+      if (!mounted) return;
+
+      final authProvider = context.read<AuthProvider>();
+      await authProvider.loadFromStorage();
+
+      final associadoProvider = context.read<AssociadoProvider>();
+
+      await associadoProvider.obterPorId(authProvider.user!.id);
+
+      if (!mounted) return;
+
+      setState(() {
+        pagamentos = associadoProvider.associado!.pagamentosPendentes;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final associadoProvider = context.watch<AssociadoProvider>();
+
     return Scaffold(
-      appBar: AppBar(),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Center(
-              child: Text(
-                '2025-2026: Unidos para Fazer o Bem',
-                style: HomePageStyles.gestaoStyle,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: _buildStatusButton(
-                    label: 'Pendentes (8)',
-                    bgColor: const Color(0xFFFFF9C4),
-                    borderColor: const Color(0xFFFBC02D),
-                    onPressed: () {},
+        padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+        child: associadoProvider.loading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Center(
+                    child: Image.asset('assets/images/logo.png', height: 160),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildStatusButton(
-                    label: 'Atrasados (3)',
-                    bgColor: const Color(0xFFFFCDD2),
-                    borderColor: const Color(0xFFD32F2F),
-                    onPressed: () {},
+                  Center(
+                    child: Text(
+                      associadoProvider.associado?.gestao ??
+                          'Gestão não informada.',
+                      style: HomePageStyles.gestaoStyle,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildStatusButton(
-                    label: 'Pagos (1)',
-                    bgColor: const Color(0xFFB2EBF2),
-                    borderColor: const Color(0xFF0097A7),
-                    onPressed: () {},
+                  const SizedBox(height: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: _buildStatusButton(
+                          label:
+                              'Pendentes (${associadoProvider.associado!.pagamentosPendentes.length})',
+                          bgColor: const Color(0xFFFFF9C4),
+                          borderColor: const Color(0xFFFBC02D),
+                          onPressed: () {
+                            setState(() {
+                              pagamentos = associadoProvider
+                                  .associado!
+                                  .pagamentosPendentes;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildStatusButton(
+                          label:
+                              'Atrasados (${associadoProvider.associado!.pagamentosAtrasados.length})',
+                          bgColor: const Color(0xFFFFCDD2),
+                          borderColor: const Color(0xFFD32F2F),
+                          onPressed: () {
+                            setState(() {
+                              pagamentos = associadoProvider
+                                  .associado!
+                                  .pagamentosAtrasados
+                                  .map((p) {
+                                    p.statusNome = 'Atrasado';
+                                    return p;
+                                  })
+                                  .toList();
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildStatusButton(
+                          label:
+                              'Pagos (${associadoProvider.associado!.pagamentosPagos.length})',
+                          bgColor: const Color(0xFFB2EBF2),
+                          borderColor: const Color(0xFF0097A7),
+                          onPressed: () {
+                            setState(() {
+                              pagamentos =
+                                  associadoProvider.associado!.pagamentosPagos;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            const Card(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  ListTile(
-                    title: Text('Gestão 25/26'),
-                    subtitle: Text('Vencimento'),
+                  Expanded(
+                    child: pagamentos.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Nenhum pagamento encontrado',
+                              style: HomePageStyles.listaVazia,
+                            ),
+                          )
+                        : ListView.separated(
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 15),
+                            padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
+                            itemCount: pagamentos.length,
+                            itemBuilder: (context, index) {
+                              final p = pagamentos[index];
+                              return Card(
+                                color: const Color.fromARGB(255, 226, 223, 225),
+                                child: ListTile(
+                                  title: Center(
+                                    child: Text(
+                                      p.statusNome,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
+                                    'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
+                                    'Pagamento: ${p.dataPagamento != null ? "${p.dataPagamento!.day.toString().padLeft(2, '0')}/"
+                                              "${p.dataPagamento!.month.toString().padLeft(2, '0')}/"
+                                              "${p.dataPagamento!.year}" : "Não pago"}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

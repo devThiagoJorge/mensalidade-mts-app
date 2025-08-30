@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mensalidade_mts_app/core/network/api_service.dart';
 import 'package:mensalidade_mts_app/core/theme/app_theme.dart';
+import 'package:mensalidade_mts_app/features/associados/associado_service.dart';
+import 'package:mensalidade_mts_app/features/associados/providers/associado_provider.dart';
 import 'package:mensalidade_mts_app/features/auth/auth_gate.dart';
 import 'package:mensalidade_mts_app/features/auth/auth_service.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
@@ -27,22 +29,29 @@ void main() {
   dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
   final api = ApiService(dio);
   final authService = AuthService(api);
+  final associadoService = AssociadoService(api);
 
-  runApp(MyApp(authService: authService));
+  runApp(MyApp(authService: authService, associadoService: associadoService));
 }
 
 class MyApp extends StatelessWidget {
   final AuthService authService;
-
-  const MyApp({super.key, required this.authService});
+  final AssociadoService associadoService;
+  const MyApp({
+    super.key,
+    required this.authService,
+    required this.associadoService,
+  });
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider(authService)),
-
         ChangeNotifierProvider(
           create: (_) => PrimeiroAcessoProvider(authService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AssociadoProvider(associadoService),
         ),
       ],
       child: MaterialApp(

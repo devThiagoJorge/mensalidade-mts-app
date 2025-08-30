@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mensalidade_mts_app/core/components/login/app_text_styles_login.dart';
+import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
 import 'package:mensalidade_mts_app/features/auth/presentation/login_page.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/primeiro_acesso_provider.dart';
 import 'package:provider/provider.dart';
