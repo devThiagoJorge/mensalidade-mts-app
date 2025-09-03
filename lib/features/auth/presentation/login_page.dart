@@ -109,6 +109,9 @@ class LoginPage extends StatelessWidget {
                             minimumSize: const Size(360, 55),
                           ),
                           onPressed: () {
+                            emailController.text = 'thiago.v.jorge@hotmail.com';
+                            passwordController.text = 'teste123';
+
                             if (_formKey.currentState!.validate()) {
                               provider.login(
                                 emailController.text,
