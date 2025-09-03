@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
-import 'package:mensalidade_mts_app/features/associados/presentation/associado_home_page.dart';
 import 'package:mensalidade_mts_app/features/associados/presentation/associado_meu_perfil.dart';
 import 'package:mensalidade_mts_app/features/tesoureiros/presentation/tesoureiro_home_page.dart';
 

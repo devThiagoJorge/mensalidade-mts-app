@@ -36,11 +36,9 @@ class LoginPage extends StatelessWidget {
           if (provider.user != null && provider.error != null) {
             WidgetsBinding.instance.addPostFrameCallback((_) async {
               // Salva o token e a permissão do usuário
+              Navigator.pushReplacementNamed(context, '/auth');
               await storage.write(key: 'token', value: provider.user!.token);
               await storage.write(key: 'role', value: provider.user!.role);
-
-              // Redireciona para AuthGate
-              Navigator.pushReplacementNamed(context, '/auth');
             });
           }
 
