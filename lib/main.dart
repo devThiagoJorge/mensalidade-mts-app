@@ -7,6 +7,8 @@ import 'package:mensalidade_mts_app/features/auth/auth_gate.dart';
 import 'package:mensalidade_mts_app/features/auth/auth_service.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/primeiro_acesso_provider.dart';
+import 'package:mensalidade_mts_app/features/pagamentos/pagamento_service.dart';
+import 'package:mensalidade_mts_app/features/pagamentos/providers/pagamento_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 
@@ -30,17 +32,26 @@ void main() {
   final api = ApiService(dio);
   final authService = AuthService(api);
   final associadoService = AssociadoService(api);
+  final pagamentosService = PagamentoService(api);
 
-  runApp(MyApp(authService: authService, associadoService: associadoService));
+  runApp(
+    MyApp(
+      authService: authService,
+      associadoService: associadoService,
+      pagamentosService: pagamentosService,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   final AuthService authService;
   final AssociadoService associadoService;
+  final PagamentoService pagamentosService;
   const MyApp({
     super.key,
     required this.authService,
     required this.associadoService,
+    required this.pagamentosService,
   });
   @override
   Widget build(BuildContext context) {
@@ -52,6 +63,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => AssociadoProvider(associadoService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PagamentoProvider(pagamentosService),
         ),
       ],
       child: MaterialApp(

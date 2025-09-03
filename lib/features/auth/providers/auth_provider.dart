@@ -25,9 +25,16 @@ class AuthProvider extends ChangeNotifier {
     final role = await _storage.read(key: 'role');
     final nome = await _storage.read(key: 'nome');
     final id = await _storage.read(key: 'id');
+    final gestao = await _storage.read(key: 'gestaoAtual');
 
     if (_token != null && role != null && nome != null && id != null) {
-      _user = User(token: _token!, nome: nome, role: role, id: int.parse(id));
+      _user = User(
+        token: _token!,
+        nome: nome,
+        role: role,
+        gestaoAtual: gestao!,
+        id: int.parse(id),
+      );
     }
 
     notifyListeners();

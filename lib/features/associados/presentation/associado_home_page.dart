@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/associado/home_page_styles.dart';
-import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
 import 'package:mensalidade_mts_app/features/associados/providers/associado_provider.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
 import 'package:mensalidade_mts_app/features/pagamentos/models/pagamento.dart';
@@ -13,8 +12,12 @@ class AssociadoHomePage extends StatefulWidget {
   State<AssociadoHomePage> createState() => _AssociadoHomePageState();
 }
 
+enum StatusSelecionado { pendentes, atrasadas, pagas }
+
 class _AssociadoHomePageState extends State<AssociadoHomePage> {
   List<Pagamento> pagamentos = [];
+  StatusSelecionado? statusSelecionado;
+
   @override
   void initState() {
     super.initState();
@@ -23,9 +26,8 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
       if (!mounted) return;
 
       final authProvider = context.read<AuthProvider>();
-      await authProvider.loadFromStorage();
-
       final associadoProvider = context.read<AssociadoProvider>();
+      await authProvider.loadFromStorage();
 
       await associadoProvider.obterPorId(authProvider.user!.id);
 
@@ -33,6 +35,7 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
 
       setState(() {
         pagamentos = associadoProvider.associado!.pagamentosPendentes;
+        statusSelecionado = StatusSelecionado.pendentes;
       });
     });
   }
@@ -66,10 +69,14 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
                         child: _buildStatusButton(
                           label:
                               'Pendentes (${associadoProvider.associado!.pagamentosPendentes.length})',
-                          bgColor: const Color(0xFFFFF9C4),
+                          isSelected:
+                              statusSelecionado == StatusSelecionado.pendentes,
+                          selectedColor: const Color(0xFFFBC02D),
+                          unselectedColor: const Color(0xFFFFF9C4),
                           borderColor: const Color(0xFFFBC02D),
                           onPressed: () {
                             setState(() {
+                              statusSelecionado = StatusSelecionado.pendentes;
                               pagamentos = associadoProvider
                                   .associado!
                                   .pagamentosPendentes;
@@ -82,10 +89,14 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
                         child: _buildStatusButton(
                           label:
                               'Atrasados (${associadoProvider.associado!.pagamentosAtrasados.length})',
-                          bgColor: const Color(0xFFFFCDD2),
+                          isSelected:
+                              statusSelecionado == StatusSelecionado.atrasadas,
+                          selectedColor: const Color(0xFFD32F2F),
+                          unselectedColor: const Color(0xFFFFCDD2),
                           borderColor: const Color(0xFFD32F2F),
                           onPressed: () {
                             setState(() {
+                              statusSelecionado = StatusSelecionado.atrasadas;
                               pagamentos = associadoProvider
                                   .associado!
                                   .pagamentosAtrasados
@@ -103,10 +114,14 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
                         child: _buildStatusButton(
                           label:
                               'Pagos (${associadoProvider.associado!.pagamentosPagos.length})',
-                          bgColor: const Color(0xFFB2EBF2),
+                          isSelected:
+                              statusSelecionado == StatusSelecionado.pagas,
+                          selectedColor: const Color(0xFF0097A7),
+                          unselectedColor: const Color(0xFFB2EBF2),
                           borderColor: const Color(0xFF0097A7),
                           onPressed: () {
                             setState(() {
+                              statusSelecionado = StatusSelecionado.pagas;
                               pagamentos =
                                   associadoProvider.associado!.pagamentosPagos;
                             });
@@ -164,13 +179,16 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
 
   Widget _buildStatusButton({
     required String label,
-    required Color bgColor,
+    required bool isSelected,
+    required Color selectedColor,
+    required Color unselectedColor,
     required Color borderColor,
     required VoidCallback onPressed,
   }) {
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
-        backgroundColor: bgColor,
+        backgroundColor: isSelected ? selectedColor : unselectedColor,
+        foregroundColor: isSelected ? Colors.white : Colors.black,
         side: BorderSide(color: borderColor, width: 2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         padding: const EdgeInsets.symmetric(vertical: 35),

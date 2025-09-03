@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mensalidade_mts_app/features/associados/presentation/associado_home_page.dart';
 import 'package:mensalidade_mts_app/features/associados/presentation/associado_menu.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
 import 'package:mensalidade_mts_app/features/auth/presentation/login_page.dart';
+import 'package:mensalidade_mts_app/features/tesoureiros/presentation/tesoureiro_menu.dart';
 import 'package:provider/provider.dart';
 
 class AuthGate extends StatelessWidget {
@@ -26,7 +26,7 @@ class AuthGate extends StatelessWidget {
           case 'Associado':
             return const MenuAssociado();
           case 'Tesoureiro':
-            return const Center(child: Text('Permissão Tesoureiro'));
+            return const MenuTesoureiro();
           default:
             return const Scaffold(
               body: Center(child: Text('Permissão desconhecida')),
