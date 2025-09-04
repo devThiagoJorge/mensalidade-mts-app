@@ -46,6 +46,7 @@ class MensalidadesAssociados {
 }
 
 class PagamentoAssociadosDto {
+  final int idPagamento;
   String statusNome;
   final double valor;
   final DateTime? dataPagamento;
@@ -55,6 +56,7 @@ class PagamentoAssociadosDto {
   final String nomeCompleto;
 
   PagamentoAssociadosDto({
+    required this.idPagamento,
     required this.statusNome,
     required this.valor,
     this.dataPagamento,
@@ -66,6 +68,7 @@ class PagamentoAssociadosDto {
 
   factory PagamentoAssociadosDto.fromJson(Map<String, dynamic> json) {
     return PagamentoAssociadosDto(
+      idPagamento: json['idPagamento'] ?? 0,
       statusNome: json['statusNome'] ?? '',
       nomeCompleto: json['nomeCompleto'] ?? '',
       valor: (json['valor'] ?? 0).toDouble(),
@@ -80,6 +83,7 @@ class PagamentoAssociadosDto {
 
   Map<String, dynamic> toJson() {
     return {
+      'idPagamento': idPagamento,
       'statusNome': statusNome,
       'valor': valor,
       'dataPagamento': dataPagamento?.toIso8601String(),

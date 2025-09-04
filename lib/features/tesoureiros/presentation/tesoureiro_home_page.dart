@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/associado/home_page_styles.dart';
+import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
 import 'package:mensalidade_mts_app/features/pagamentos/providers/pagamento_provider.dart';
 import 'package:mensalidade_mts_app/features/tesoureiros/models/pagamentos_associados.dart';
@@ -19,6 +20,7 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
   double valorTotal = 0;
   OpcoesDropDown? valorSelecionado;
   StatusSelecionado? statusSelecionado;
+  Set<int> selecionados = {};
 
   List<OpcoesDropDown> opcoesDropDown = [
     OpcoesDropDown(
@@ -32,14 +34,14 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
       property: 'IsMesAnterior',
     ),
     OpcoesDropDown(
-      descricao: 'Primeiro semestre',
+      descricao: '1º semestre da gestão',
       ativo: false,
-      property: 'IsPrimeiroSemestre',
+      property: 'IsPrimeiroSemestreGestao',
     ),
     OpcoesDropDown(
-      descricao: 'Segundo semestre',
+      descricao: '2º semestre da gestão',
       ativo: false,
-      property: 'IsSegundoSemestre',
+      property: 'IsSegundoSemestreGestao',
     ),
     OpcoesDropDown(
       descricao: 'Gestão toda',
@@ -79,6 +81,12 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
   Widget build(BuildContext context) {
     final pagamentosProvider = context.watch<PagamentoProvider>();
     final authProvider = context.watch<AuthProvider>();
+
+    if (pagamentosProvider.mensalidades == null ||
+        authProvider.user == null ||
+        pagamentosProvider.loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       body: Padding(
@@ -158,7 +166,8 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                 Expanded(
                   child: _buildStatusButton(
                     label:
-                        'Pendentes (${pagamentosProvider.mensalidades!.pagamentosPendentes.length})',
+                        'Pendentes (${pagamentosProvider.mensalidades?.pagamentosPendentes.length ?? 0})',
+
                     isSelected:
                         statusSelecionado == StatusSelecionado.pendentes,
                     selectedColor: const Color(0xFFFBC02D),
@@ -179,39 +188,44 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: _buildStatusButton(
-                    label:
-                        'Atrasados (${pagamentosProvider.mensalidades!.pagamentosAtrasados.length})',
-                    isSelected:
-                        statusSelecionado == StatusSelecionado.atrasadas,
-                    selectedColor: const Color(0xFFD32F2F),
-                    unselectedColor: const Color(0xFFFFCDD2),
-                    borderColor: const Color(0xFFD32F2F),
-                    onPressed: () {
-                      setState(() {
-                        statusSelecionado = StatusSelecionado.atrasadas;
-                        pagamentos = pagamentosProvider
-                            .mensalidades!
-                            .pagamentosAtrasados
-                            .map((p) {
-                              p.statusNome = 'Atrasado';
-                              return p;
-                            })
-                            .toList();
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatusButton(
+                        label:
+                            'Atrasados (${pagamentosProvider.mensalidades?.pagamentosAtrasados.length ?? 0})',
+                        isSelected:
+                            statusSelecionado == StatusSelecionado.atrasadas,
+                        selectedColor: const Color(0xFFD32F2F),
+                        unselectedColor: const Color(0xFFFFCDD2),
+                        borderColor: const Color(0xFFD32F2F),
+                        onPressed: () {
+                          setState(() {
+                            statusSelecionado = StatusSelecionado.atrasadas;
+                            pagamentos = pagamentosProvider
+                                .mensalidades!
+                                .pagamentosAtrasados
+                                .map((p) {
+                                  p.statusNome = 'Atrasado';
+                                  return p;
+                                })
+                                .toList();
 
-                        valorTotal = pagamentosProvider
-                            .mensalidades!
-                            .valorTotalPagamentosAtrasados;
-                      });
-                    },
-                  ),
+                            valorTotal = pagamentosProvider
+                                .mensalidades!
+                                .valorTotalPagamentosAtrasados;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
+
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildStatusButton(
                     label:
-                        'Pagos (${pagamentosProvider.mensalidades!.pagamentosPagos.length})',
+                        'Pagos (${pagamentosProvider.mensalidades?.pagamentosPagos.length ?? 0})',
                     isSelected: statusSelecionado == StatusSelecionado.pagas,
                     selectedColor: const Color(0xFF0097A7),
                     unselectedColor: const Color(0xFFB2EBF2),
@@ -231,49 +245,89 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                 ),
               ],
             ),
-            pagamentosProvider.loading
-                ? const Center(child: CircularProgressIndicator())
-                : Expanded(
-                    child: pagamentos.isEmpty
-                        ? Center(
-                            child: Text(
-                              'Não há mensalidades ${statusSelecionado!.name}.',
-                              style: HomePageStyles.listaVazia,
-                            ),
-                          )
-                        : ListView.separated(
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(height: 15),
-                            padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
-                            itemCount: pagamentos.length,
-                            itemBuilder: (context, index) {
-                              final p = pagamentos[index];
-                              return Card(
-                                color: const Color.fromARGB(255, 226, 223, 225),
-                                child: ListTile(
-                                  title: Center(
-                                    child: Text(
-                                      p.statusNome,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
-                                    'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
-                                    'Pagamento: ${p.dataPagamento != null ? "${p.dataPagamento!.day.toString().padLeft(2, '0')}/"
-                                              "${p.dataPagamento!.month.toString().padLeft(2, '0')}/"
-                                              "${p.dataPagamento!.year}" : "Não pago"}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: AppDefaultStyles.rotaractColor,
+                  foregroundColor: AppDefaultStyles.rotaractColor,
+                  side: const BorderSide(
+                    color: AppDefaultStyles.rotaractColor,
+                    width: 2,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                ),
+                onPressed: () {},
+                child: Text(
+                  'Pagar ${selecionados.length}',
+                  style: HomePageStyles.buttonTextStyle,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: pagamentos.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Não há mensalidades ${statusSelecionado!.name}.',
+                        style: HomePageStyles.listaVazia,
+                      ),
+                    )
+                  : pagamentosProvider.loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.separated(
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 15),
+                      padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
+                      itemCount: pagamentos.length,
+                      itemBuilder: (context, index) {
+                        final p = pagamentos[index];
+                        return Card(
+                          color: const Color.fromARGB(255, 226, 223, 225),
+                          child: CheckboxListTile(
+                            title: Center(
+                              child: Text(
+                                p.nomeCompleto,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              );
+                              ),
+                            ),
+                            subtitle: Text(
+                              'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
+                              'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
+                              '${p.dataPagamento != null ? "${p.dataPagamento!.day.toString().padLeft(2, '0')}/"
+                                        "${p.dataPagamento!.month.toString().padLeft(2, '0')}/"
+                                        "${p.dataPagamento!.year}" : "Não pago"}\n'
+                              '${p.statusNome}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            secondary: const Icon(
+                              Icons.monetization_on_rounded,
+                            ),
+                            activeColor: AppDefaultStyles.rotaractColor,
+                            checkColor: Colors.white,
+                            value: selecionados.contains(p.idPagamento),
+                            onChanged: (bool? value) {
+                              setState(() {
+                                if (value!) {
+                                  selecionados.add(p.idPagamento);
+                                } else {
+                                  selecionados.remove(p.idPagamento);
+                                }
+                              });
                             },
                           ),
-                  ),
+                        );
+                      },
+                    ),
+            ),
           ],
         ),
       ),

@@ -43,6 +43,11 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
   @override
   Widget build(BuildContext context) {
     final associadoProvider = context.watch<AssociadoProvider>();
+    final authProvider = context.watch<AuthProvider>();
+
+    if (associadoProvider.associado == null || authProvider.user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       body: Padding(
