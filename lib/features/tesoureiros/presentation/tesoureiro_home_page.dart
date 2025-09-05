@@ -167,7 +167,6 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                   child: _buildStatusButton(
                     label:
                         'Pendentes (${pagamentosProvider.mensalidades?.pagamentosPendentes.length ?? 0})',
-
                     isSelected:
                         statusSelecionado == StatusSelecionado.pendentes,
                     selectedColor: const Color(0xFFFBC02D),
@@ -175,6 +174,10 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                     borderColor: const Color(0xFFFBC02D),
                     onPressed: () {
                       setState(() {
+                        if (statusSelecionado == StatusSelecionado.pendentes) {
+                          return;
+                        }
+
                         statusSelecionado = StatusSelecionado.pendentes;
                         pagamentos = pagamentosProvider
                             .mensalidades!
@@ -183,44 +186,47 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                         valorTotal = pagamentosProvider
                             .mensalidades!
                             .valorTotalPagamentosPendentes;
+
+                        selecionados = {};
                       });
                     },
                   ),
                 ),
                 const SizedBox(width: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildStatusButton(
-                        label:
-                            'Atrasados (${pagamentosProvider.mensalidades?.pagamentosAtrasados.length ?? 0})',
-                        isSelected:
-                            statusSelecionado == StatusSelecionado.atrasadas,
-                        selectedColor: const Color(0xFFD32F2F),
-                        unselectedColor: const Color(0xFFFFCDD2),
-                        borderColor: const Color(0xFFD32F2F),
-                        onPressed: () {
-                          setState(() {
-                            statusSelecionado = StatusSelecionado.atrasadas;
-                            pagamentos = pagamentosProvider
-                                .mensalidades!
-                                .pagamentosAtrasados
-                                .map((p) {
-                                  p.statusNome = 'Atrasado';
-                                  return p;
-                                })
-                                .toList();
+                Expanded(
+                  child: _buildStatusButton(
+                    label:
+                        'Atrasados (${pagamentosProvider.mensalidades?.pagamentosAtrasados.length ?? 0})',
+                    isSelected:
+                        statusSelecionado == StatusSelecionado.atrasadas,
+                    selectedColor: const Color(0xFFD32F2F),
+                    unselectedColor: const Color(0xFFFFCDD2),
+                    borderColor: const Color(0xFFD32F2F),
+                    onPressed: () {
+                      setState(() {
+                        if (statusSelecionado == StatusSelecionado.atrasadas) {
+                          return;
+                        }
 
-                            valorTotal = pagamentosProvider
-                                .mensalidades!
-                                .valorTotalPagamentosAtrasados;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
+                        statusSelecionado = StatusSelecionado.atrasadas;
+                        pagamentos = pagamentosProvider
+                            .mensalidades!
+                            .pagamentosAtrasados
+                            .map((p) {
+                              p.statusNome = 'Atrasado';
+                              return p;
+                            })
+                            .toList();
+
+                        valorTotal = pagamentosProvider
+                            .mensalidades!
+                            .valorTotalPagamentosAtrasados;
+
+                        selecionados = {};
+                      });
+                    },
+                  ),
                 ),
-
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildStatusButton(
@@ -232,6 +238,10 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                     borderColor: const Color(0xFF0097A7),
                     onPressed: () {
                       setState(() {
+                        if (statusSelecionado == StatusSelecionado.pagas) {
+                          return;
+                        }
+
                         statusSelecionado = StatusSelecionado.pagas;
                         pagamentos =
                             pagamentosProvider.mensalidades!.pagamentosPagos;
@@ -239,6 +249,8 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                         valorTotal = pagamentosProvider
                             .mensalidades!
                             .valorTotalPagamentosPagos;
+
+                        selecionados = {};
                       });
                     },
                   ),
@@ -247,29 +259,7 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: AppDefaultStyles.rotaractColor,
-                  foregroundColor: AppDefaultStyles.rotaractColor,
-                  side: const BorderSide(
-                    color: AppDefaultStyles.rotaractColor,
-                    width: 2,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                ),
-                onPressed: () {},
-                child: Text(
-                  'Pagar ${selecionados.length}',
-                  style: HomePageStyles.buttonTextStyle,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
+              // A lista agora ocupa todo o espaço restante disponível
               child: pagamentos.isEmpty
                   ? Center(
                       child: Text(
@@ -282,7 +272,7 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                   : ListView.separated(
                       separatorBuilder: (context, index) =>
                           const SizedBox(height: 15),
-                      padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                       itemCount: pagamentos.length,
                       itemBuilder: (context, index) {
                         final p = pagamentos[index];
@@ -329,6 +319,32 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                     ),
             ),
           ],
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              backgroundColor: AppDefaultStyles.rotaractColor,
+              foregroundColor: Colors.white,
+              side: const BorderSide(
+                color: AppDefaultStyles.rotaractColor,
+                width: 2,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 20),
+            ),
+            onPressed: () {},
+            child: Text(
+              'Pagar (${selecionados.length})',
+              style: HomePageStyles.buttonTextStyle,
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ),
     );

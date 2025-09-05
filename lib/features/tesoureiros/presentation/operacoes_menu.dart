@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
+import 'package:mensalidade_mts_app/features/tesoureiros/presentation/cadastrar_associado.dart';
 
 class OperacoesMenu extends StatelessWidget {
   const OperacoesMenu({super.key});
@@ -23,7 +24,15 @@ class OperacoesMenu extends StatelessWidget {
                         leading: const Icon(Icons.person_add_outlined),
                         selectedColor: AppDefaultStyles.rotaractColor,
                         title: const Text('Cadastrar Associado'),
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const CadastroAssociadoPage(),
+                            ),
+                          );
+                        },
                       ),
                       ListTile(
                         leading: const Icon(Icons.check_circle_outline),
