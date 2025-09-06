@@ -1,7 +1,11 @@
+// ... seu código anterior
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
+import 'package:mensalidade_mts_app/features/associados/commands/criar_associado_command.dart';
+import 'package:mensalidade_mts_app/features/associados/providers/associado_provider.dart';
+import 'package:provider/provider.dart';
 
 class CadastroAssociadoPage extends StatefulWidget {
   const CadastroAssociadoPage({super.key});
@@ -11,25 +15,42 @@ class CadastroAssociadoPage extends StatefulWidget {
 }
 
 class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
+  late final TextEditingController primeiroNomeController;
+  late final TextEditingController sobrenomeController;
+  late final TextEditingController emailController;
+  late final TextEditingController diaVencimentoMensalidadeController;
+
   @override
   void initState() {
     super.initState();
+    primeiroNomeController = TextEditingController();
+    sobrenomeController = TextEditingController();
+    emailController = TextEditingController();
+    diaVencimentoMensalidadeController = TextEditingController();
   }
 
-  bool isInicioGestao = true;
+  @override
+  void dispose() {
+    primeiroNomeController.dispose();
+    sobrenomeController.dispose();
+    emailController.dispose();
+    diaVencimentoMensalidadeController.dispose();
+    super.dispose();
+  }
+
+  bool isInicioGestao = false;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
-    final primeiroNomeController = TextEditingController();
-    final sobrenomeController = TextEditingController();
-    final emailController = TextEditingController();
-    final diaVencimentoMensalidadeController = TextEditingController();
     const WidgetStateProperty<Icon> thumbIcon =
         WidgetStateProperty<Icon>.fromMap(<WidgetStatesConstraint, Icon>{
           WidgetState.selected: Icon(Icons.check),
           WidgetState.any: Icon(Icons.close),
         });
 
-    final _formKey = GlobalKey<FormState>();
+    final provider = Provider.of<AssociadoProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -39,16 +60,18 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Center(child: Image.asset('assets/images/logo.png', height: 160)),
-              const SizedBox(height: 40),
-              // Campo EMAIL
-              SizedBox(
-                width: 360,
-                child: TextFormField(
+        child: SingleChildScrollView(
+          // Adicionado para evitar overflow
+          child: Form(
+            key: _formKey, // Use a variável _formKey
+            child: Column(
+              children: [
+                Center(
+                  child: Image.asset('assets/images/logo.png', height: 160),
+                ),
+                const SizedBox(height: 40),
+                // Campo EMAIL
+                TextFormField(
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
@@ -60,12 +83,9 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                       ? 'Informe o e-mail'
                       : null,
                 ),
-              ),
 
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 360,
-                child: TextFormField(
+                const SizedBox(height: 20),
+                TextFormField(
                   controller: primeiroNomeController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -76,11 +96,8 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                       ? 'Informe o primeiro nome'
                       : null,
                 ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 360,
-                child: TextFormField(
+                const SizedBox(height: 20),
+                TextFormField(
                   controller: sobrenomeController,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
@@ -91,12 +108,9 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                       ? 'Informe o sobrenome'
                       : null,
                 ),
-              ),
 
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 360,
-                child: TextFormField(
+                const SizedBox(height: 20),
+                TextFormField(
                   controller: diaVencimentoMensalidadeController,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -106,34 +120,24 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                     labelText: 'Dia do vencimento da mensalidade',
                   ),
                   validator: (value) {
-                    // 1. Verifica se o valor é nulo ou vazio
                     if (value == null || value.isEmpty) {
                       return 'Informe o Dia do vencimento da mensalidade';
                     }
-
-                    // 2. Tenta converter o valor para um número.
                     final int? parsedValue = int.tryParse(value);
-
-                    // 3. Verifica se a conversão falhou (não é um número válido)
                     if (parsedValue == null) {
                       return 'Informe um número válido';
                     }
-
-                    // 4. Verifica se o número está dentro do intervalo aceitável (1 a 31)
                     if (parsedValue < 1 || parsedValue > 31) {
                       return 'O dia deve estar entre 1 e 31';
                     }
-
                     return null;
                   },
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
+                // AQUI COMEÇA O PADDING CORRETO PARA O SWITCH
+                const SizedBox(height: 20),
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 10),
                     const Text(
                       'Gerar a mensalidade desde o começo da gestão?',
                       style: TextStyle(
@@ -153,27 +157,63 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 40),
 
-              // BOTÃO ENTRAR
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                const SizedBox(height: 40),
+
+                provider.loading
+                    ? const CircularProgressIndicator(
+                        color: AppTextStylesLogin.rotaractColor,
+                      )
+                    : SizedBox(
+                        width: double.infinity,
+                        height: 55,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(5),
+                              ),
+                            ),
+                            backgroundColor: AppTextStylesLogin.rotaractColor,
+                          ),
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              final int diaVencimentoPagamento = int.parse(
+                                diaVencimentoMensalidadeController.text,
+                              );
+
+                              CriarAssociadoCommand command =
+                                  CriarAssociadoCommand(
+                                    primeiroNome: primeiroNomeController.text,
+                                    sobreNome: sobrenomeController.text,
+                                    email: emailController.text,
+                                    diaVencimentoPagamento:
+                                        diaVencimentoPagamento,
+                                    gerarDesdeComecoGestao: isInicioGestao,
+                                  );
+                              provider.cadastrarAssociado(command);
+                            }
+                          },
+                          child: const Text(
+                            'Cadastrar',
+                            style: AppTextStylesLogin.buttonLoginStyle,
+                          ),
+                        ),
+                      ),
+                const SizedBox(height: 12),
+                if (provider.response != null)
+                  Text(
+                    provider.response!.message,
+                    style: TextStyle(
+                      color: provider.response!.success
+                          ? Colors.green
+                          : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  backgroundColor: AppTextStylesLogin.rotaractColor,
-                  minimumSize: const Size(360, 55),
-                ),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {}
-                },
-                child: const Text(
-                  'Cadastrar',
-                  style: AppTextStylesLogin.buttonLoginStyle,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
