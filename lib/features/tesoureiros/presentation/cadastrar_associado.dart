@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
 
 class CadastroAssociadoPage extends StatefulWidget {
@@ -8,20 +10,24 @@ class CadastroAssociadoPage extends StatefulWidget {
   State<CadastroAssociadoPage> createState() => _CadastroAssociadoPageState();
 }
 
-enum StatusSelecionado { pendentes, atrasadas, pagas }
-
 class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
   @override
   void initState() {
     super.initState();
   }
 
+  bool isInicioGestao = true;
   @override
   Widget build(BuildContext context) {
     final primeiroNomeController = TextEditingController();
     final sobrenomeController = TextEditingController();
     final emailController = TextEditingController();
     final diaVencimentoMensalidadeController = TextEditingController();
+    const WidgetStateProperty<Icon> thumbIcon =
+        WidgetStateProperty<Icon>.fromMap(<WidgetStatesConstraint, Icon>{
+          WidgetState.selected: Icon(Icons.check),
+          WidgetState.any: Icon(Icons.close),
+        });
 
     final _formKey = GlobalKey<FormState>();
     return Scaffold(
@@ -79,7 +85,7 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: 'Informe o sobrenome',
-                    labelText: 'Primeiro nome',
+                    labelText: 'Sobrenome',
                   ),
                   validator: (value) => value == null || value.isEmpty
                       ? 'Informe o sobrenome'
@@ -92,30 +98,60 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                 width: 360,
                 child: TextFormField(
                   controller: diaVencimentoMensalidadeController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: 'Dia do vencimento da mensalidade',
                     labelText: 'Dia do vencimento da mensalidade',
                   ),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Informe o Dia do vencimento da mensalidade'
-                      : null,
+                  validator: (value) {
+                    // 1. Verifica se o valor é nulo ou vazio
+                    if (value == null || value.isEmpty) {
+                      return 'Informe o Dia do vencimento da mensalidade';
+                    }
+
+                    // 2. Tenta converter o valor para um número.
+                    final int? parsedValue = int.tryParse(value);
+
+                    // 3. Verifica se a conversão falhou (não é um número válido)
+                    if (parsedValue == null) {
+                      return 'Informe um número válido';
+                    }
+
+                    // 4. Verifica se o número está dentro do intervalo aceitável (1 a 31)
+                    if (parsedValue < 1 || parsedValue > 31) {
+                      return 'O dia deve estar entre 1 e 31';
+                    }
+
+                    return null;
+                  },
                 ),
               ),
-
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 360,
-                child: TextFormField(
-                  controller: diaVencimentoMensalidadeController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Gerar desde começo da gestão?',
-                    labelText: 'Dia do vencimento da mensalidade',
-                  ),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Informe o Dia do vencimento da mensalidade'
-                      : null,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Gerar a mensalidade desde o começo da gestão?',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Switch(
+                      thumbIcon: thumbIcon,
+                      value: isInicioGestao,
+                      onChanged: (bool newValue) {
+                        setState(() {
+                          isInicioGestao = newValue;
+                        });
+                      },
+                      activeThumbColor: AppDefaultStyles.rotaractColor,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 40),
