@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/associado/home_page_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
+import 'package:mensalidade_mts_app/features/pagamentos/commands/atualizar_pagamento_command.dart';
 import 'package:mensalidade_mts_app/features/pagamentos/providers/pagamento_provider.dart';
 import 'package:mensalidade_mts_app/features/tesoureiros/models/pagamentos_associados.dart';
 import 'package:provider/provider.dart';
@@ -75,6 +76,22 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
             pagamentosProvider.mensalidades!.valorTotalPagamentosPendentes;
       });
     });
+  }
+
+  void apagarMensalidadesSelecionadas() {
+    selecionados = {};
+  }
+
+  void atualizarListagemPagamentos({
+    required PagamentoProvider pagamentosProvider,
+    required StatusSelecionado status,
+    required List<PagamentoAssociadosDto> pagamentosDto,
+  }) {
+    pagamentos = [];
+    statusSelecionado = status;
+    pagamentos = pagamentosDto;
+    valorTotal = pagamentosProvider.mensalidades!.valorTotalPagamentosPagos;
+    apagarMensalidadesSelecionadas();
   }
 
   @override
@@ -178,16 +195,13 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                           return;
                         }
 
-                        statusSelecionado = StatusSelecionado.pendentes;
-                        pagamentos = pagamentosProvider
-                            .mensalidades!
-                            .pagamentosPendentes;
-
-                        valorTotal = pagamentosProvider
-                            .mensalidades!
-                            .valorTotalPagamentosPendentes;
-
-                        selecionados = {};
+                        atualizarListagemPagamentos(
+                          pagamentosProvider: pagamentosProvider,
+                          status: StatusSelecionado.pendentes,
+                          pagamentosDto: pagamentosProvider
+                              .mensalidades!
+                              .pagamentosPendentes,
+                        );
                       });
                     },
                   ),
@@ -208,21 +222,18 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                           return;
                         }
 
-                        statusSelecionado = StatusSelecionado.atrasadas;
-                        pagamentos = pagamentosProvider
-                            .mensalidades!
-                            .pagamentosAtrasados
-                            .map((p) {
-                              p.statusNome = 'Atrasado';
-                              return p;
-                            })
-                            .toList();
+                        atualizarListagemPagamentos(
+                          pagamentosProvider: pagamentosProvider,
+                          status: StatusSelecionado.atrasadas,
+                          pagamentosDto: pagamentosProvider
+                              .mensalidades!
+                              .pagamentosAtrasados,
+                        );
 
-                        valorTotal = pagamentosProvider
-                            .mensalidades!
-                            .valorTotalPagamentosAtrasados;
-
-                        selecionados = {};
+                        pagamentos = pagamentos.map((p) {
+                          p.statusNome = 'Atrasado';
+                          return p;
+                        }).toList();
                       });
                     },
                   ),
@@ -242,15 +253,12 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                           return;
                         }
 
-                        statusSelecionado = StatusSelecionado.pagas;
-                        pagamentos =
-                            pagamentosProvider.mensalidades!.pagamentosPagos;
-
-                        valorTotal = pagamentosProvider
-                            .mensalidades!
-                            .valorTotalPagamentosPagos;
-
-                        selecionados = {};
+                        atualizarListagemPagamentos(
+                          pagamentosProvider: pagamentosProvider,
+                          status: StatusSelecionado.pagas,
+                          pagamentosDto:
+                              pagamentosProvider.mensalidades!.pagamentosPagos,
+                        );
                       });
                     },
                   ),
@@ -338,7 +346,27 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
               ),
               padding: const EdgeInsets.symmetric(vertical: 20),
             ),
-            onPressed: () {},
+            onPressed: () {
+              AtualizarPagamentoCommand command = AtualizarPagamentoCommand(
+                idsPagamentos: selecionados.toList(),
+                statusPagamentoId: 2,
+                dataPagamento: DateTime.now(),
+              );
+
+              pagamentosProvider.atualizarPagamento(command);
+
+              if (pagamentosProvider.response!.success) {
+                statusSelecionado = StatusSelecionado.pendentes;
+                pagamentos =
+                    pagamentosProvider.mensalidades!.pagamentosPendentes;
+
+                valorTotal = pagamentosProvider
+                    .mensalidades!
+                    .valorTotalPagamentosPendentes;
+
+                selecionados = {};
+              }
+            },
             child: Text(
               'Pagar (${selecionados.length})',
               style: HomePageStyles.buttonTextStyle,

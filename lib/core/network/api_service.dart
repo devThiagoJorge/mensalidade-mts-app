@@ -31,7 +31,9 @@ class ApiService {
       return MappingResponse<T>(
         success: true,
         message: response.data['message'],
-        data: fromJson(response.data['data']),
+        data: response.data['data'] != null
+            ? fromJson(response.data['data'])
+            : null,
       );
     } on DioException catch (e) {
       final data = e.response?.data;
@@ -56,7 +58,37 @@ class ApiService {
       return MappingResponse<T>(
         success: true,
         message: response.data['message'],
-        data: fromJson(response.data['data']),
+        data: response.data['data'] != null
+            ? fromJson(response.data['data'])
+            : null,
+      );
+    } on DioException catch (e) {
+      final data = e.response?.data;
+
+      return MappingResponse<T>(
+        success: false,
+        message:
+            data?['message'] ?? e.response?.statusMessage ?? 'Erro inesperado',
+      );
+    } catch (e) {
+      return MappingResponse<T>(success: false, message: e.toString());
+    }
+  }
+
+  Future<MappingResponse<T>> put<T>(
+    String url,
+    Map<String, dynamic> body,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async {
+    try {
+      final response = await dio.put(url, data: body);
+
+      return MappingResponse<T>(
+        success: true,
+        message: response.data['message'],
+        data: response.data['data'] != null
+            ? fromJson(response.data['data'])
+            : null,
       );
     } on DioException catch (e) {
       final data = e.response?.data;

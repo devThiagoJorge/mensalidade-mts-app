@@ -46,26 +46,21 @@ class AssociadoProvider extends ChangeNotifier {
     }
   }
 
-  Future<MappingResponse<void>> cadastrarAssociado(
-    CriarAssociadoCommand command,
-  ) async {
+  Future<void> cadastrarAssociado(CriarAssociadoCommand command) async {
     _loading = true;
     _error = null;
+    _response = null;
     notifyListeners();
 
     try {
       final result = await associadoService.cadastrarAssociado(command);
+      _response = result;
 
-      if (result.success) {
-        _response = result;
-        return response!;
-      } else {
+      if (!result.success) {
         _error = result.message;
       }
-      return result;
     } catch (e) {
       _error = e.toString();
-      return MappingResponse<void>(success: false, message: _error!);
     } finally {
       _loading = false;
       notifyListeners();

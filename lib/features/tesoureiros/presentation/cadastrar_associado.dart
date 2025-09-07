@@ -201,7 +201,8 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                         ),
                       ),
                 const SizedBox(height: 12),
-                if (provider.response != null)
+                if (provider.response !=
+                    null) // #TODO PRECISA ARRUMAR A MENSAGEM AQUI.... (quando cadastra), cenário de sucesso!
                   Text(
                     provider.response!.message,
                     style: TextStyle(
