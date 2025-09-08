@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/associado/home_page_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
+import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
 import 'package:mensalidade_mts_app/features/pagamentos/commands/atualizar_pagamento_command.dart';
+import 'package:mensalidade_mts_app/features/pagamentos/presentation/modal_confirmacao_pagamento.dart';
 import 'package:mensalidade_mts_app/features/pagamentos/providers/pagamento_provider.dart';
 import 'package:mensalidade_mts_app/features/tesoureiros/models/pagamentos_associados.dart';
 import 'package:provider/provider.dart';
@@ -16,12 +18,20 @@ class TesoureiroHomePage extends StatefulWidget {
 
 enum StatusSelecionado { pendentes, atrasadas, pagas }
 
+enum StatusPagamento {
+  pendente(1),
+  pago(2);
+
+  final int value;
+  const StatusPagamento(this.value);
+}
+
 class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
   List<PagamentoAssociadosDto> pagamentos = [];
   double valorTotal = 0;
   OpcoesDropDown? valorSelecionado;
   StatusSelecionado? statusSelecionado;
-  Set<int> selecionados = {};
+  Set<PagamentoAssociadosDto> selecionados = {};
 
   List<OpcoesDropDown> opcoesDropDown = [
     OpcoesDropDown(
@@ -69,11 +79,13 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
       if (!mounted) return;
 
       setState(() {
-        pagamentos = pagamentosProvider.mensalidades!.pagamentosPendentes;
         valorSelecionado = opcoesDropDown.first;
-        statusSelecionado = StatusSelecionado.pendentes;
-        valorTotal =
-            pagamentosProvider.mensalidades!.valorTotalPagamentosPendentes;
+        atualizarListagemPagamentos(
+          pagamentosProvider: pagamentosProvider,
+          status: StatusSelecionado.pendentes,
+          pagamentosDto: pagamentosProvider.mensalidades!.pagamentosPendentes,
+          valor: pagamentosProvider.mensalidades!.valorTotalPagamentosPendentes,
+        );
       });
     });
   }
@@ -86,12 +98,47 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
     required PagamentoProvider pagamentosProvider,
     required StatusSelecionado status,
     required List<PagamentoAssociadosDto> pagamentosDto,
+    required double valor,
   }) {
-    pagamentos = [];
-    statusSelecionado = status;
-    pagamentos = pagamentosDto;
-    valorTotal = pagamentosProvider.mensalidades!.valorTotalPagamentosPagos;
-    apagarMensalidadesSelecionadas();
+    setState(() {
+      pagamentos = [];
+      statusSelecionado = status;
+      pagamentos = pagamentosDto;
+      valorTotal = valor;
+
+      apagarMensalidadesSelecionadas();
+    });
+  }
+
+  Future<void> _openModalPagamentos(AtualizarPagamentoCommand command) async {
+    final pagamentosProvider = context.read<PagamentoProvider>();
+    final pagou = await showModalBottomSheet<bool>(
+      isScrollControlled: true,
+      context: context,
+      builder: (ctx) => ModalConfirmacaoPagamento(
+        selecionadosParaPagamento: selecionados,
+        pagamentos: pagamentos,
+        command: command,
+      ),
+    );
+
+    if (pagou == true) {
+      apagarMensalidadesSelecionadas();
+
+      await pagamentosProvider.obterMensalidadeAssociados(
+        '${valorSelecionado?.property}=true',
+      );
+
+      setState(() {
+        pagamentos = pagamentosProvider.mensalidades!.pagamentosPendentes;
+      });
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pagamento realizado com sucesso! 🎉')),
+        );
+      }
+    }
   }
 
   @override
@@ -110,7 +157,8 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
         padding: const EdgeInsets.only(left: 16.0, right: 16.0),
         child: Column(
           children: [
-            Center(child: Image.asset('assets/images/logo.png', height: 160)),
+            // Center(child: Image.asset('assets/images/logo.png', height: 160)),
+            const SizedBox(height: 15),
             Center(
               child: Text(
                 authProvider.user!.gestaoAtual,
@@ -201,6 +249,9 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                           pagamentosDto: pagamentosProvider
                               .mensalidades!
                               .pagamentosPendentes,
+                          valor: pagamentosProvider
+                              .mensalidades!
+                              .valorTotalPagamentosPendentes,
                         );
                       });
                     },
@@ -228,6 +279,9 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                           pagamentosDto: pagamentosProvider
                               .mensalidades!
                               .pagamentosAtrasados,
+                          valor: pagamentosProvider
+                              .mensalidades!
+                              .valorTotalPagamentosAtrasados,
                         );
 
                         pagamentos = pagamentos.map((p) {
@@ -258,6 +312,9 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                           status: StatusSelecionado.pagas,
                           pagamentosDto:
                               pagamentosProvider.mensalidades!.pagamentosPagos,
+                          valor: pagamentosProvider
+                              .mensalidades!
+                              .valorTotalPagamentosPagos,
                         );
                       });
                     },
@@ -311,13 +368,13 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                             ),
                             activeColor: AppDefaultStyles.rotaractColor,
                             checkColor: Colors.white,
-                            value: selecionados.contains(p.idPagamento),
+                            value: selecionados.contains(p),
                             onChanged: (bool? value) {
                               setState(() {
                                 if (value!) {
-                                  selecionados.add(p.idPagamento);
+                                  selecionados.add(p);
                                 } else {
-                                  selecionados.remove(p.idPagamento);
+                                  selecionados.remove(p);
                                 }
                               });
                             },
@@ -346,30 +403,21 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
               ),
               padding: const EdgeInsets.symmetric(vertical: 20),
             ),
-            onPressed: () {
+            onPressed: () async {
               AtualizarPagamentoCommand command = AtualizarPagamentoCommand(
-                idsPagamentos: selecionados.toList(),
-                statusPagamentoId: 2,
+                idsPagamentos: selecionados.map((p) => p.idPagamento).toList(),
+                statusPagamentoId: statusSelecionado != StatusSelecionado.pagas
+                    ? StatusPagamento.pago.value
+                    : StatusPagamento.pendente.value,
                 dataPagamento: DateTime.now(),
               );
-
-              pagamentosProvider.atualizarPagamento(command);
-
-              if (pagamentosProvider.response!.success) {
-                statusSelecionado = StatusSelecionado.pendentes;
-                pagamentos =
-                    pagamentosProvider.mensalidades!.pagamentosPendentes;
-
-                valorTotal = pagamentosProvider
-                    .mensalidades!
-                    .valorTotalPagamentosPendentes;
-
-                selecionados = {};
-              }
+              _openModalPagamentos(command);
             },
             child: Text(
-              'Pagar (${selecionados.length})',
-              style: HomePageStyles.buttonTextStyle,
+              statusSelecionado != StatusSelecionado.pagas
+                  ? 'Pagar (${selecionados.length})'
+                  : 'Marcar como pendente (${selecionados.length})',
+              style: AppTextStylesLogin.buttonLoginStyle,
               textAlign: TextAlign.center,
             ),
           ),
