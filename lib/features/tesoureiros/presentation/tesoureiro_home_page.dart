@@ -140,8 +140,12 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pagamento realizado com sucesso! 🎉')),
+          const SnackBar(
+            content: Text('Pagamento realizado com sucesso! 🎉'),
+            backgroundColor: AppDefaultStyles.rotaractColor,
+          ),
         );
+        apagarMensalidadesSelecionadas();
       }
     }
   }
@@ -230,6 +234,8 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                         valorTotal = pagamentosProvider
                             .mensalidades!
                             .valorTotalPagamentosPendentes;
+
+                        atualizarNomesAssociados(pagamentos);
                       });
                     },
                   ),
@@ -369,54 +375,59 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                               style: AppTextStylesLogin.primeiroLoginStyle,
                             ),
                             subtitle: Text(
-                              'Mensalidades selecionadas: (${pagamentos.where((c) => c.nomeCompleto == nome).length})',
+                              'Mensalidades ${statusSelecionado!.name} (${pagamentos.where((c) => c.nomeCompleto == nome).length})',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            children: pagamentos.where((p) => p.nomeCompleto == nome).map((
-                              p,
-                            ) {
-                              return Card(
-                                color: const Color.fromARGB(255, 226, 223, 225),
-                                child: CheckboxListTile(
-                                  title: Center(
-                                    child: Text(
-                                      p.nomeCompleto,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
+                            children: pagamentos
+                                .where((p) => p.nomeCompleto == nome)
+                                .map((p) {
+                                  return Card(
+                                    color: const Color.fromARGB(
+                                      255,
+                                      226,
+                                      223,
+                                      225,
+                                    ),
+                                    child: CheckboxListTile(
+                                      title: Center(
+                                        child: Text(
+                                          p.nomeCompleto,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color:
+                                                AppDefaultStyles.rotaractColor,
+                                          ),
+                                        ),
                                       ),
+                                      subtitle: Text(
+                                        'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
+                                        'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      secondary: const Icon(
+                                        Icons.monetization_on_rounded,
+                                      ),
+                                      activeColor:
+                                          AppDefaultStyles.rotaractColor,
+                                      checkColor: Colors.white,
+                                      value: selecionados.contains(p),
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          if (value!) {
+                                            selecionados.add(p);
+                                          } else {
+                                            selecionados.remove(p);
+                                          }
+                                        });
+                                      },
                                     ),
-                                  ),
-                                  subtitle: Text(
-                                    'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
-                                    'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
-                                    '${p.dataPagamento != null ? "${p.dataPagamento!.day.toString().padLeft(2, '0')}/"
-                                              "${p.dataPagamento!.month.toString().padLeft(2, '0')}/"
-                                              "${p.dataPagamento!.year}" : "Não pago"}\n'
-                                    '${p.statusNome}',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  secondary: const Icon(
-                                    Icons.monetization_on_rounded,
-                                  ),
-                                  activeColor: AppDefaultStyles.rotaractColor,
-                                  checkColor: Colors.white,
-                                  value: selecionados.contains(p),
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      if (value!) {
-                                        selecionados.add(p);
-                                      } else {
-                                        selecionados.remove(p);
-                                      }
-                                    });
-                                  },
-                                ),
-                              );
-                            }).toList(),
+                                  );
+                                })
+                                .toList(),
                           );
                         }).toList(),
                       ),

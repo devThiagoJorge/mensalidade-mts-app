@@ -40,6 +40,15 @@ class OperacoesMenu extends StatelessWidget {
                         title: const Text('Sinalizar mensalidade como paga'),
                         onTap: () {},
                       ),
+
+                      ListTile(
+                        leading: const Icon(Icons.check_circle_outline),
+                        selectedColor: AppDefaultStyles.rotaractColor,
+                        title: const Text(
+                          'Lembrete de mensalidade atrasada',
+                        ), // #TODO Disparo de e-mail para notificar atrasos...
+                        onTap: () {},
+                      ),
                     ],
                   ),
                   ExpansionTile(

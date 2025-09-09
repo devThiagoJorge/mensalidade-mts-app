@@ -178,9 +178,13 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
                     );
 
                     if (confirmar == true) {
-                      widget.command.atualizarDataPagamento(
-                        DateTime.parse(dateController.text),
-                      );
+                      List<String> splitDate = dateController.text.split('/');
+                      int ano = int.parse(splitDate[2]);
+                      int mes = int.parse(splitDate[1]);
+                      int dia = int.parse(splitDate[0]);
+
+                      DateTime novaData = DateTime(ano, mes, dia);
+                      widget.command.atualizarDataPagamento(novaData);
 
                       await pagamentosProvider.atualizarPagamento(
                         widget.command,
@@ -190,6 +194,13 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
 
                       if (pagamentosProvider.response?.success == true) {
                         Navigator.pop(context, true);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(pagamentosProvider!.error!),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
                       }
                     }
                   },
