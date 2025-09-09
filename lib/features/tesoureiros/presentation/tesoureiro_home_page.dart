@@ -409,7 +409,7 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                 statusPagamentoId: statusSelecionado != StatusSelecionado.pagas
                     ? StatusPagamento.pago.value
                     : StatusPagamento.pendente.value,
-                dataPagamento: DateTime.now(),
+                dataPagamento: null,
               );
               _openModalPagamentos(command);
             },

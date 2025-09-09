@@ -23,7 +23,7 @@ class PagamentoService {
     return api.put<void>('$prefixo/associados', {
       'idsPagamentos': command.idsPagamentos,
       'statusPagamentoId': command.statusPagamentoId,
-      'dataPagamento': command.dataPagamento.toIso8601String(),
+      'dataPagamento': command.dataPagamento!.toIso8601String(),
     }, (_) {});
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/associado/home_page_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
@@ -40,6 +41,21 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
   @override
   Widget build(BuildContext context) {
     final pagamentosProvider = context.watch<PagamentoProvider>();
+    TextEditingController dateController = TextEditingController();
+
+    Future<void> selectDate(BuildContext context) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100),
+      );
+      if (picked != null) {
+        setState(() {
+          dateController.text = DateFormat('dd/MM/yyyy').format(picked);
+        });
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -119,10 +135,29 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
                       context: context,
                       builder: (ctx) => AlertDialog(
                         title: const Text('Confirmar Pagamento'),
-                        content: Text(
-                          'Você tem certeza que deseja concluir o pagamento de '
-                          '${widget.selecionadosParaPagamento.length} mensalidade(s)?',
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Você tem certeza que deseja concluir o pagamento de '
+                              '${widget.selecionadosParaPagamento.length} mensalidade(s)? Se sim, selecione uma data de pagamento, lembrando que todas as mensalidades selecionadas, serão pagas com a data definida.',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(height: 15),
+                            TextFormField(
+                              controller: dateController,
+                              readOnly: true,
+                              decoration: const InputDecoration(
+                                labelText: 'Selecione a data de pagamento',
+                                prefixIcon: Icon(Icons.calendar_today),
+                                border: OutlineInputBorder(),
+                              ),
+                              onTap: () => selectDate(context),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
                         ),
+
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(ctx).pop(false),
@@ -141,6 +176,10 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
                     );
 
                     if (confirmar == true) {
+                      widget.command.atualizarDataPagamento(
+                        DateTime.parse(dateController.text),
+                      );
+
                       await pagamentosProvider.atualizarPagamento(
                         widget.command,
                       );
