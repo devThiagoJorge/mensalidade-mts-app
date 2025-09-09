@@ -32,6 +32,7 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
   OpcoesDropDown? valorSelecionado;
   StatusSelecionado? statusSelecionado;
   Set<PagamentoAssociadosDto> selecionados = {};
+  Set<String> nomesAssociados = {};
 
   List<OpcoesDropDown> opcoesDropDown = [
     OpcoesDropDown(
@@ -86,6 +87,10 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
           pagamentosDto: pagamentosProvider.mensalidades!.pagamentosPendentes,
           valor: pagamentosProvider.mensalidades!.valorTotalPagamentosPendentes,
         );
+
+        atualizarNomesAssociados(
+          pagamentosProvider.mensalidades!.pagamentosPendentes,
+        );
       });
     });
   }
@@ -139,6 +144,15 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
         );
       }
     }
+  }
+
+  void atualizarNomesAssociados(List<PagamentoAssociadosDto> pagamentos) {
+    setState(() {
+      nomesAssociados = pagamentos
+          .map((p) => p.nomeCompleto)
+          .cast<String>()
+          .toSet();
+    });
   }
 
   @override
@@ -253,6 +267,10 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                               .mensalidades!
                               .valorTotalPagamentosPendentes,
                         );
+
+                        atualizarNomesAssociados(
+                          pagamentosProvider.mensalidades!.pagamentosPendentes,
+                        );
                       });
                     },
                   ),
@@ -288,6 +306,10 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                           p.statusNome = 'Atrasado';
                           return p;
                         }).toList();
+
+                        atualizarNomesAssociados(
+                          pagamentosProvider.mensalidades!.pagamentosAtrasados,
+                        );
                       });
                     },
                   ),
@@ -316,6 +338,10 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                               .mensalidades!
                               .valorTotalPagamentosPagos,
                         );
+
+                        atualizarNomesAssociados(
+                          pagamentosProvider.mensalidades!.pagamentosPagos,
+                        );
                       });
                     },
                   ),
@@ -334,53 +360,66 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                     )
                   : pagamentosProvider.loading
                   ? const Center(child: CircularProgressIndicator())
-                  : ListView.separated(
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 15),
-                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      itemCount: pagamentos.length,
-                      itemBuilder: (context, index) {
-                        final p = pagamentos[index];
-                        return Card(
-                          color: const Color.fromARGB(255, 226, 223, 225),
-                          child: CheckboxListTile(
-                            title: Center(
-                              child: Text(
-                                p.nomeCompleto,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                  : Expanded(
+                      child: ListView(
+                        children: nomesAssociados.map((nome) {
+                          return ExpansionTile(
+                            title: Text(
+                              nome,
+                              style: AppTextStylesLogin.primeiroLoginStyle,
                             ),
                             subtitle: Text(
-                              'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
-                              'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
-                              '${p.dataPagamento != null ? "${p.dataPagamento!.day.toString().padLeft(2, '0')}/"
-                                        "${p.dataPagamento!.month.toString().padLeft(2, '0')}/"
-                                        "${p.dataPagamento!.year}" : "Não pago"}\n'
-                              '${p.statusNome}',
+                              'Mensalidades selecionadas: (${pagamentos.where((c) => c.nomeCompleto == nome).length})',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            secondary: const Icon(
-                              Icons.monetization_on_rounded,
-                            ),
-                            activeColor: AppDefaultStyles.rotaractColor,
-                            checkColor: Colors.white,
-                            value: selecionados.contains(p),
-                            onChanged: (bool? value) {
-                              setState(() {
-                                if (value!) {
-                                  selecionados.add(p);
-                                } else {
-                                  selecionados.remove(p);
-                                }
-                              });
-                            },
-                          ),
-                        );
-                      },
+                            children: pagamentos.where((p) => p.nomeCompleto == nome).map((
+                              p,
+                            ) {
+                              return Card(
+                                color: const Color.fromARGB(255, 226, 223, 225),
+                                child: CheckboxListTile(
+                                  title: Center(
+                                    child: Text(
+                                      p.nomeCompleto,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
+                                    'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
+                                    '${p.dataPagamento != null ? "${p.dataPagamento!.day.toString().padLeft(2, '0')}/"
+                                              "${p.dataPagamento!.month.toString().padLeft(2, '0')}/"
+                                              "${p.dataPagamento!.year}" : "Não pago"}\n'
+                                    '${p.statusNome}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  secondary: const Icon(
+                                    Icons.monetization_on_rounded,
+                                  ),
+                                  activeColor: AppDefaultStyles.rotaractColor,
+                                  checkColor: Colors.white,
+                                  value: selecionados.contains(p),
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      if (value!) {
+                                        selecionados.add(p);
+                                      } else {
+                                        selecionados.remove(p);
+                                      }
+                                    });
+                                  },
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        }).toList(),
+                      ),
                     ),
             ),
           ],

@@ -52,7 +52,9 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
       );
       if (picked != null) {
         setState(() {
-          dateController.text = DateFormat('dd/MM/yyyy').format(picked);
+          dateController.text = DateFormat('dd/MM/yyyy').format(
+            picked,
+          ); // # TODO: precisa arrumar, deu erro por conta do formato BR.
         });
       }
     }
@@ -75,9 +77,9 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
               child: Column(
                 children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: Column(
+                  Expanded(
+                    // <- adiciona rolagem
+                    child: ListView(
                       children: nomesUnicos.map((nome) {
                         return ExpansionTile(
                           title: Text(
