@@ -75,4 +75,9 @@ class AuthProvider extends ChangeNotifier {
     await _storage.deleteAll();
     notifyListeners();
   }
+
+  void resetar() {
+    _error = null;
+    _loading = false;
+  }
 }

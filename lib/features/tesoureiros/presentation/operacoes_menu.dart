@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
+import 'package:mensalidade_mts_app/features/gestoes/presentation/atualizar_mensalidade.dart';
 import 'package:mensalidade_mts_app/features/tesoureiros/presentation/cadastrar_associado.dart';
 
 class OperacoesMenu extends StatelessWidget {
@@ -56,7 +57,15 @@ class OperacoesMenu extends StatelessWidget {
                         leading: const Icon(Icons.attach_money),
                         selectedColor: AppDefaultStyles.rotaractColor,
                         title: const Text('Alterar valor mensalidade'),
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const AtualizarMensalidadeModal(),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

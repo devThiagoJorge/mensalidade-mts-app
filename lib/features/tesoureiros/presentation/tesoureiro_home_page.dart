@@ -369,7 +369,7 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                               style: AppTextStylesLogin.primeiroLoginStyle,
                             ),
                             subtitle: Text(
-                              'Mensalidades selecionadas: (${pagamentos.where((c) => c.nomeCompleto == nome).length})',
+                              'Mensalidades ${statusSelecionado!.name} (${pagamentos.where((c) => c.nomeCompleto == nome).length})',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),

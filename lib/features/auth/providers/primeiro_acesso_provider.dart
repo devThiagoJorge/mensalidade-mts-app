@@ -14,6 +14,9 @@ class PrimeiroAcessoProvider extends ChangeNotifier {
   MappingResponse? _response;
   MappingResponse? get response => _response;
 
+  String? _mensagemTrocaSenha;
+  String? get mensagemTrocaSenha => _mensagemTrocaSenha;
+
   PrimeiroAcessoProvider(this.authService);
 
   Future<void> solicitarPrimeiroAcesso(String email) async {
@@ -53,9 +56,12 @@ class PrimeiroAcessoProvider extends ChangeNotifier {
     try {
       final result = await authService.definirSenha(email, senha, codigo);
       _response = result;
+      resetError();
 
       if (!result.success) {
         _error = result.message;
+      } else {
+        _mensagemTrocaSenha = result.message;
       }
     } catch (e) {
       _error = e.toString();
@@ -67,6 +73,11 @@ class PrimeiroAcessoProvider extends ChangeNotifier {
   void reset() {
     _error = null;
     _response = null;
+    notifyListeners();
+  }
+
+  void resetError() {
+    _error = null;
     notifyListeners();
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mensalidade_mts_app/core/components/date_picker.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/associado/home_page_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
@@ -52,9 +53,7 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
       );
       if (picked != null) {
         setState(() {
-          dateController.text = DateFormat('dd/MM/yyyy').format(
-            picked,
-          ); // # TODO: precisa arrumar, deu erro por conta do formato BR.
+          dateController.text = DateFormat('dd/MM/yyyy').format(picked);
         });
       }
     }
@@ -146,15 +145,10 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
                               style: const TextStyle(fontSize: 14),
                             ),
                             const SizedBox(height: 15),
-                            TextFormField(
+                            DatePickerFormField(
+                              labelText:
+                                  'Selecione a data de pagamento das mensalidades',
                               controller: dateController,
-                              readOnly: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Selecione a data de pagamento',
-                                prefixIcon: Icon(Icons.calendar_today),
-                                border: OutlineInputBorder(),
-                              ),
-                              onTap: () => selectDate(context),
                             ),
                             const SizedBox(height: 10),
                           ],

@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
 import 'package:mensalidade_mts_app/features/auth/presentation/primeiro_acesso.dart';
+import 'package:mensalidade_mts_app/features/auth/providers/primeiro_acesso_provider.dart';
 import 'package:provider/provider.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -16,11 +23,39 @@ class LoginPage extends StatelessWidget {
   final storage = const FlutterSecureStorage();
 
   @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        PrimeiroAcessoProvider provider = context
+            .read<PrimeiroAcessoProvider>();
+
+        if (provider.mensagemTrocaSenha != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(provider.mensagemTrocaSenha!),
+                backgroundColor: AppDefaultStyles.rotaractColor,
+              ),
+            );
+          });
+        }
+      }
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Consumer<AuthProvider>(
         builder: (context, provider, child) {
-          // Mostra erro como texto
           if (provider.error != null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -35,7 +70,6 @@ class LoginPage extends StatelessWidget {
           // Se logou com sucesso
           if (provider.user != null && provider.error != null) {
             WidgetsBinding.instance.addPostFrameCallback((_) async {
-              // Salva o token e a permissão do usuário
               Navigator.pushReplacementNamed(context, '/auth');
               await storage.write(key: 'token', value: provider.user!.token);
               await storage.write(key: 'role', value: provider.user!.role);
@@ -171,6 +205,7 @@ class LoginPage extends StatelessWidget {
                     ),
                     child: TextButton(
                       onPressed: () {
+                        provider.resetar();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
