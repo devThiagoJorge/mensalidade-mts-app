@@ -180,10 +180,10 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
                         widget.command,
                       );
 
-                      if (!mounted) return;
-
-                      if (pagamentosProvider.response?.success == true) {
-                        Navigator.pop(context, true);
+                      if (context.mounted) {
+                        if (pagamentosProvider.response?.success == true) {
+                          Navigator.pop(context, true);
+                        }
                       }
                     }
                   },

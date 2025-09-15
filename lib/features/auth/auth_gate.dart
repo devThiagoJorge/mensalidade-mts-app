@@ -19,7 +19,7 @@ class AuthGate extends StatelessWidget {
         }
 
         if (provider.token == null || provider.user == null) {
-          return LoginPage();
+          return const LoginPage();
         }
 
         switch (provider.user!.role) {

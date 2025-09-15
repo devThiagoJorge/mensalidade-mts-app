@@ -1,6 +1,7 @@
 // ... seu código anterior
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mensalidade_mts_app/core/components/snackbar.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
 import 'package:mensalidade_mts_app/features/associados/commands/criar_associado_command.dart';
@@ -176,7 +177,7 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                             ),
                             backgroundColor: AppTextStylesLogin.rotaractColor,
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formKey.currentState!.validate()) {
                               final int diaVencimentoPagamento = int.parse(
                                 diaVencimentoMensalidadeController.text,
@@ -191,7 +192,21 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                                         diaVencimentoPagamento,
                                     gerarDesdeComecoGestao: isInicioGestao,
                                   );
-                              provider.cadastrarAssociado(command);
+
+                              await provider.cadastrarAssociado(command);
+
+                              if (provider.response!.success) {
+                                SnackbarHelper.mostrarSucesso(
+                                  context,
+                                  provider.response!.message,
+                                );
+                                resetFields();
+                              } else {
+                                SnackbarHelper.mostrarErro(
+                                  context,
+                                  provider.response!.message,
+                                );
+                              }
                             }
                           },
                           child: const Text(
@@ -201,22 +216,19 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                         ),
                       ),
                 const SizedBox(height: 12),
-                if (provider.response != null)
-                  Text(
-                    provider.response!.message,
-                    style: TextStyle(
-                      color: provider.response!.success
-                          ? Colors.green
-                          : Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  void resetFields() {
+    primeiroNomeController.clear();
+    sobrenomeController.clear();
+    emailController.clear();
+    diaVencimentoMensalidadeController.clear();
+    isInicioGestao = false;
   }
 }

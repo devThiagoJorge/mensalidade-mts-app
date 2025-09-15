@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
-import 'package:mensalidade_mts_app/features/gestoes/presentation/atualizar_mensalidade.dart';
+import 'package:mensalidade_mts_app/features/gestoes/presentation/atualizar_mensalidade_gestao.dart';
 import 'package:mensalidade_mts_app/features/tesoureiros/presentation/cadastrar_associado.dart';
 
 class OperacoesMenu extends StatelessWidget {

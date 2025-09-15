@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mensalidade_mts_app/core/components/snackbar.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
 import 'package:mensalidade_mts_app/features/auth/presentation/login_page.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/primeiro_acesso_provider.dart';
@@ -59,9 +60,12 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
         await provider.solicitarPrimeiroAcesso(emailController.text);
         if (provider.error == null && provider.response?.success == true) {
           setState(() => etapa++);
-          _mostarSucesso(provider.response!.message);
+          SnackbarHelper.mostrarSucesso(context, provider.response!.message);
         } else {
-          _mostrarErro(provider.error ?? 'Erro inesperado');
+          SnackbarHelper.mostrarErro(
+            context,
+            provider.error ?? 'Erro inesperado',
+          );
         }
         break;
 
@@ -69,9 +73,12 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
         await provider.validarCodigo(codigoController.text);
         if (codigoController.text.length == 6) {
           setState(() => etapa++);
-          _mostarSucesso(provider.response!.message);
+          SnackbarHelper.mostrarSucesso(context, provider.response!.message);
         } else {
-          _mostrarErro(provider.error ?? 'Erro inesperado');
+          SnackbarHelper.mostrarErro(
+            context,
+            provider.error ?? 'Erro inesperado',
+          );
         }
         break;
 
@@ -94,29 +101,13 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
             });
           }
         } else {
-          _mostrarErro(provider.error ?? 'Erro inesperado');
+          SnackbarHelper.mostrarErro(
+            context,
+            provider.error ?? 'Erro inesperado',
+          );
         }
         break;
     }
-  }
-
-  void _mostrarErro(String mensagem) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(mensagem), backgroundColor: Colors.red),
-      );
-    });
-  }
-
-  void _mostarSucesso(String mensagem) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(mensagem),
-          backgroundColor: AppTextStylesLogin.rotaractColor,
-        ),
-      );
-    });
   }
 
   @override

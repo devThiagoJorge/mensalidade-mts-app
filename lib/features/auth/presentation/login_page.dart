@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
+import 'package:mensalidade_mts_app/core/components/snackbar.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
 import 'package:mensalidade_mts_app/features/auth/providers/auth_provider.dart';
 import 'package:mensalidade_mts_app/features/auth/presentation/primeiro_acesso.dart';
@@ -37,14 +37,7 @@ class _LoginPageState extends State<LoginPage> {
             .read<PrimeiroAcessoProvider>();
 
         if (provider.mensagemTrocaSenha != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(provider.mensagemTrocaSenha!),
-                backgroundColor: AppDefaultStyles.rotaractColor,
-              ),
-            );
-          });
+          SnackbarHelper.mostrarSucesso(context, provider.response!.message);
         }
       }
     });
