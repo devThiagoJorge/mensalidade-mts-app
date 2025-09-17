@@ -10,7 +10,7 @@ class GestaoService {
   Future<MappingResponse<void>> atualizarValorMensalidade(
     AtualizarMensalidadeCommand command,
   ) {
-    return api.post<void>(prefixo, {
+    return api.put<void>('$prefixo/mensalidade/valor', {
       'dataReferencia': command.dataReferencia.toIso8601String(),
       'novoValor': command.novoValor,
     }, (_) {});

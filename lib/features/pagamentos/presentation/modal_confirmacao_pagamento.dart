@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:mensalidade_mts_app/core/components/date_picker.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/associado/home_page_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/default/app_default_styles.dart';
 import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_login.dart';
+import 'package:mensalidade_mts_app/core/utils/data_utils.dart';
 import 'package:mensalidade_mts_app/features/pagamentos/commands/atualizar_pagamento_command.dart';
 import 'package:mensalidade_mts_app/features/pagamentos/providers/pagamento_provider.dart';
 import 'package:mensalidade_mts_app/features/tesoureiros/models/pagamentos_associados.dart';
@@ -43,20 +43,6 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
   Widget build(BuildContext context) {
     final pagamentosProvider = context.watch<PagamentoProvider>();
     TextEditingController dateController = TextEditingController();
-
-    Future<void> selectDate(BuildContext context) async {
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2100),
-      );
-      if (picked != null) {
-        setState(() {
-          dateController.text = DateFormat('dd/MM/yyyy').format(picked);
-        });
-      }
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -172,8 +158,8 @@ class _ModalConfirmacaoPagamentoState extends State<ModalConfirmacaoPagamento> {
                     );
 
                     if (confirmar == true) {
-                      widget.command.atualizarDataPagamento(
-                        DateTime.parse(dateController.text),
+                      widget.command.dataPagamento = DataUtils.formatarData(
+                        dateController.text,
                       );
 
                       await pagamentosProvider.atualizarPagamento(

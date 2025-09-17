@@ -8,8 +8,4 @@ class AtualizarPagamentoCommand {
     required this.statusPagamentoId,
     required this.dataPagamento,
   });
-
-  void atualizarDataPagamento(DateTime data) {
-    dataPagamento = data;
-  }
 }
