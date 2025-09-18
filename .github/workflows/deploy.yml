@@ -23,10 +23,10 @@ jobs:
 
       - name: Build Flutter Web
         run: |
-          # Removido o --web-renderer html
           flutter build web \
             --release \
-            --base-href /mensalidade-mts-app/
+            --base-href /mensalidade-mts-app/ \
+            --dart-define=API_BASE_URL=https://mensalidademts.onrender.com
         
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
