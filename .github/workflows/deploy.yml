@@ -3,17 +3,17 @@ name: Deploy Flutter Web to GitHub Pages
 on:
   push:
     branches:
-      - master 
+      - master
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -23,11 +23,11 @@ jobs:
 
       - name: Build Flutter Web
         run: |
+          # Removido o --web-renderer html
           flutter build web \
             --release \
-            --web-renderer html \
             --base-href /mensalidade-mts-app/
-
+        
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
