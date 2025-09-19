@@ -136,9 +136,6 @@ class _LoginPageState extends State<LoginPage> {
                             minimumSize: const Size(360, 55),
                           ),
                           onPressed: () {
-                            emailController.text = 'thiago.v.jorge@hotmail.com';
-                            passwordController.text = 'teste123';
-
                             if (_formKey.currentState!.validate()) {
                               provider.login(
                                 emailController.text,
@@ -151,42 +148,7 @@ class _LoginPageState extends State<LoginPage> {
                             style: AppTextStylesLogin.buttonLoginStyle,
                           ),
                         ),
-
                   const SizedBox(height: 25),
-
-                  // BOTÃO ENTRAR
-                  provider.loading
-                      ? const CircularProgressIndicator()
-                      : ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(5),
-                              ),
-                            ),
-                            backgroundColor: AppTextStylesLogin.rotaractColor,
-                            minimumSize: const Size(360, 55),
-                          ),
-                          onPressed: () {
-                            emailController.text =
-                                'thiagojorge.fatec@gmail.com';
-                            passwordController.text = 'teste123';
-
-                            if (_formKey.currentState!.validate()) {
-                              provider.login(
-                                emailController.text,
-                                passwordController.text,
-                              );
-                            }
-                          },
-                          child: const Text(
-                            'Entrar como associados',
-                            style: AppTextStylesLogin.buttonLoginStyle,
-                          ),
-                        ),
-
-                  const SizedBox(height: 25),
-
                   Container(
                     decoration: const BoxDecoration(
                       border: Border(
