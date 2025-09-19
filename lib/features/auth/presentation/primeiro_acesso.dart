@@ -116,63 +116,70 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
 
     return Scaffold(
       appBar: AppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: formKey,
-          child: Column(
-            children: [
-              Center(child: Image.asset('assets/images/logo.png', height: 160)),
-              const SizedBox(height: 60),
-
-              if (etapa == 1) ...[_campoEmail()],
-              if (etapa == 2) ...[_campoCodigo()],
-              if (etapa == 3) ...[
-                _campoSenha(),
-                const SizedBox(height: 20),
-                _campoConfirmacao(),
-              ],
-
-              const SizedBox(height: 20),
-
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  backgroundColor: AppTextStylesLogin.rotaractColor,
-                  minimumSize: const Size(360, 55),
+      body: SingleChildScrollView(
+        // <--- Envolva o conteúdo com SingleChildScrollView
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize
+                  .min, // <--- Adicione mainAxisSize.min para que a coluna não ocupe espaço desnecessário
+              children: [
+                Center(
+                  child: Image.asset('assets/images/logo.png', height: 160),
                 ),
-                onPressed: () => avancar(provider),
-                child: provider.loading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Avançar',
-                        style: AppTextStylesLogin.buttonLoginStyle,
-                      ),
-              ),
+                const SizedBox(height: 60),
 
-              const SizedBox(height: 20),
+                if (etapa == 1) ...[_campoEmail()],
+                if (etapa == 2) ...[_campoCodigo()],
+                if (etapa == 3) ...[
+                  _campoSenha(),
+                  const SizedBox(height: 20),
+                  _campoConfirmacao(),
+                ],
 
-              Card(
-                color: AppTextStylesLogin.backgroundPainelInformativoColor,
-                child: SizedBox(
-                  width: 360,
-                  height: 200,
-                  child: Padding(
-                    padding: const EdgeInsets.all(30),
-                    child: Center(
-                      child: Text(
-                        textosPainel[etapa - 1],
-                        style:
-                            AppTextStylesLogin.alteracaoSenhaPainelInformativo,
-                        textAlign: TextAlign.center,
+                const SizedBox(height: 20),
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    backgroundColor: AppTextStylesLogin.rotaractColor,
+                    minimumSize: const Size(360, 55),
+                  ),
+                  onPressed: () => avancar(provider),
+                  child: provider.loading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Avançar',
+                          style: AppTextStylesLogin.buttonLoginStyle,
+                        ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Card(
+                  color: AppTextStylesLogin.backgroundPainelInformativoColor,
+                  child: SizedBox(
+                    width: 360,
+                    height: 200,
+                    child: Padding(
+                      padding: const EdgeInsets.all(30),
+                      child: Center(
+                        child: Text(
+                          textosPainel[etapa - 1],
+                          style: AppTextStylesLogin
+                              .alteracaoSenhaPainelInformativo,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
