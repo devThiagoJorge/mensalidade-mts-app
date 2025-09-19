@@ -95,7 +95,7 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
               if (context.mounted) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
                 );
               }
             });
@@ -122,9 +122,7 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
           key: formKey,
           child: Column(
             children: [
-              Center(
-                child: Image.asset('../../assets/images/logo.png', height: 160),
-              ),
+              Center(child: Image.asset('assets/images/logo.png', height: 160)),
               const SizedBox(height: 60),
 
               if (etapa == 1) ...[_campoEmail()],
