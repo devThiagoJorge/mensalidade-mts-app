@@ -171,7 +171,6 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
         padding: const EdgeInsets.only(left: 16.0, right: 16.0),
         child: Column(
           children: [
-            // Center(child: Image.asset('assets/images/logo.png', height: 160)),
             const SizedBox(height: 15),
             Center(
               child: Text(

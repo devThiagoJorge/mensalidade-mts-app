@@ -117,19 +117,17 @@ class _PrimeiroAcessoState extends State<PrimeiroAcesso> {
     return Scaffold(
       appBar: AppBar(),
       body: SingleChildScrollView(
-        // <--- Envolva o conteúdo com SingleChildScrollView
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0),
           child: Form(
             key: formKey,
             child: Column(
-              mainAxisSize: MainAxisSize
-                  .min, // <--- Adicione mainAxisSize.min para que a coluna não ocupe espaço desnecessário
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Center(
                   child: Image.asset('assets/images/logo.png', height: 160),
                 ),
-                const SizedBox(height: 60),
+                const SizedBox(height: 20),
 
                 if (etapa == 1) ...[_campoEmail()],
                 if (etapa == 2) ...[_campoCodigo()],

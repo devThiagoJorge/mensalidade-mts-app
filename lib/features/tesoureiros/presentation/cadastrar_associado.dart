@@ -62,9 +62,8 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
       body: Padding(
         padding: const EdgeInsets.only(left: 16.0, right: 16.0),
         child: SingleChildScrollView(
-          // Adicionado para evitar overflow
           child: Form(
-            key: _formKey, // Use a variável _formKey
+            key: _formKey,
             child: Column(
               children: [
                 Center(
