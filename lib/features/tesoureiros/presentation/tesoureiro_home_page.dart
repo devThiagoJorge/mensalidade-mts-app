@@ -167,190 +167,200 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
     }
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 15),
-            Center(
-              child: Text(
-                authProvider.user!.gestaoAtual,
-                style: HomePageStyles.gestaoStyle,
+      body: SingleChildScrollView(
+        // <-- Envolvi a Column em um SingleChildScrollView
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 15),
+              Center(
+                child: Text(
+                  authProvider.user!.gestaoAtual,
+                  style: HomePageStyles.gestaoStyle,
+                ),
               ),
-            ),
-            const SizedBox(height: 15),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<OpcoesDropDown>(
-                    initialValue: valorSelecionado,
-                    hint: const Text('Selecione uma opção'),
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    // <-- Usando Expanded para o DropdownButtonFormField
+                    child: DropdownButtonFormField<OpcoesDropDown>(
+                      initialValue: valorSelecionado,
+                      hint: const Text('Selecione uma opção'),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
+                      items: opcoesDropDown.map((OpcoesDropDown item) {
+                        return DropdownMenuItem<OpcoesDropDown>(
+                          value: item,
+                          child: Text(item.descricao),
+                        );
+                      }).toList(),
+                      onChanged: (OpcoesDropDown? novoValor) async {
+                        if (novoValor == null) return;
+
+                        setState(() {
+                          valorSelecionado = novoValor;
+                          for (var item in opcoesDropDown) {
+                            item.ativo = (item == novoValor);
+                          }
+                        });
+
+                        final property = '${novoValor.property}=true';
+
+                        await pagamentosProvider.obterMensalidadeAssociados(
+                          property,
+                        );
+
+                        if (!mounted) return;
+
+                        setState(() {
+                          pagamentos = pagamentosProvider
+                              .mensalidades!
+                              .pagamentosPendentes;
+
+                          statusSelecionado = StatusSelecionado.pendentes;
+
+                          valorTotal = pagamentosProvider
+                              .mensalidades!
+                              .valorTotalPagamentosPendentes;
+                        });
+                      },
                     ),
-                    items: opcoesDropDown.map((OpcoesDropDown item) {
-                      return DropdownMenuItem<OpcoesDropDown>(
-                        value: item,
-                        child: Text(item.descricao),
-                      );
-                    }).toList(),
-                    onChanged: (OpcoesDropDown? novoValor) async {
-                      if (novoValor == null) return;
-
-                      setState(() {
-                        valorSelecionado = novoValor;
-                        for (var item in opcoesDropDown) {
-                          item.ativo = (item == novoValor);
-                        }
-                      });
-
-                      final property = '${novoValor.property}=true';
-
-                      await pagamentosProvider.obterMensalidadeAssociados(
-                        property,
-                      );
-
-                      if (!mounted) return;
-
-                      setState(() {
-                        pagamentos = pagamentosProvider
-                            .mensalidades!
-                            .pagamentosPendentes;
-
-                        statusSelecionado = StatusSelecionado.pendentes;
-
-                        valorTotal = pagamentosProvider
-                            .mensalidades!
-                            .valorTotalPagamentosPendentes;
-                      });
-                    },
                   ),
-                ),
-                const SizedBox(width: 20),
-                Text('Valor total: $valorTotal'),
-              ],
-            ),
-            const SizedBox(height: 15),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: _buildStatusButton(
-                    label:
-                        'Pendentes (${pagamentosProvider.mensalidades?.pagamentosPendentes.length ?? 0})',
-                    isSelected:
-                        statusSelecionado == StatusSelecionado.pendentes,
-                    selectedColor: const Color(0xFFFBC02D),
-                    unselectedColor: const Color(0xFFFFF9C4),
-                    borderColor: const Color(0xFFFBC02D),
-                    onPressed: () {
-                      setState(() {
-                        if (statusSelecionado == StatusSelecionado.pendentes) {
-                          return;
-                        }
+                  const SizedBox(width: 20),
+                  Text('Valor total: $valorTotal'),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _buildStatusButton(
+                      label:
+                          'Pendentes (${pagamentosProvider.mensalidades?.pagamentosPendentes.length ?? 0})',
+                      isSelected:
+                          statusSelecionado == StatusSelecionado.pendentes,
+                      selectedColor: const Color(0xFFFBC02D),
+                      unselectedColor: const Color(0xFFFFF9C4),
+                      borderColor: const Color(0xFFFBC02D),
+                      onPressed: () {
+                        setState(() {
+                          if (statusSelecionado ==
+                              StatusSelecionado.pendentes) {
+                            return;
+                          }
 
-                        atualizarListagemPagamentos(
-                          pagamentosProvider: pagamentosProvider,
-                          status: StatusSelecionado.pendentes,
-                          pagamentosDto: pagamentosProvider
-                              .mensalidades!
-                              .pagamentosPendentes,
-                          valor: pagamentosProvider
-                              .mensalidades!
-                              .valorTotalPagamentosPendentes,
-                        );
+                          atualizarListagemPagamentos(
+                            pagamentosProvider: pagamentosProvider,
+                            status: StatusSelecionado.pendentes,
+                            pagamentosDto: pagamentosProvider
+                                .mensalidades!
+                                .pagamentosPendentes,
+                            valor: pagamentosProvider
+                                .mensalidades!
+                                .valorTotalPagamentosPendentes,
+                          );
 
-                        atualizarNomesAssociados(
-                          pagamentosProvider.mensalidades!.pagamentosPendentes,
-                        );
-                      });
-                    },
+                          atualizarNomesAssociados(
+                            pagamentosProvider
+                                .mensalidades!
+                                .pagamentosPendentes,
+                          );
+                        });
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildStatusButton(
-                    label:
-                        'Atrasados (${pagamentosProvider.mensalidades?.pagamentosAtrasados.length ?? 0})',
-                    isSelected:
-                        statusSelecionado == StatusSelecionado.atrasadas,
-                    selectedColor: const Color(0xFFD32F2F),
-                    unselectedColor: const Color(0xFFFFCDD2),
-                    borderColor: const Color(0xFFD32F2F),
-                    onPressed: () {
-                      setState(() {
-                        if (statusSelecionado == StatusSelecionado.atrasadas) {
-                          return;
-                        }
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildStatusButton(
+                      label:
+                          'Atrasados (${pagamentosProvider.mensalidades?.pagamentosAtrasados.length ?? 0})',
+                      isSelected:
+                          statusSelecionado == StatusSelecionado.atrasadas,
+                      selectedColor: const Color(0xFFD32F2F),
+                      unselectedColor: const Color(0xFFFFCDD2),
+                      borderColor: const Color(0xFFD32F2F),
+                      onPressed: () {
+                        setState(() {
+                          if (statusSelecionado ==
+                              StatusSelecionado.atrasadas) {
+                            return;
+                          }
 
-                        atualizarListagemPagamentos(
-                          pagamentosProvider: pagamentosProvider,
-                          status: StatusSelecionado.atrasadas,
-                          pagamentosDto: pagamentosProvider
-                              .mensalidades!
-                              .pagamentosAtrasados,
-                          valor: pagamentosProvider
-                              .mensalidades!
-                              .valorTotalPagamentosAtrasados,
-                        );
+                          atualizarListagemPagamentos(
+                            pagamentosProvider: pagamentosProvider,
+                            status: StatusSelecionado.atrasadas,
+                            pagamentosDto: pagamentosProvider
+                                .mensalidades!
+                                .pagamentosAtrasados,
+                            valor: pagamentosProvider
+                                .mensalidades!
+                                .valorTotalPagamentosAtrasados,
+                          );
 
-                        pagamentos = pagamentos.map((p) {
-                          p.statusNome = 'Atrasado';
-                          return p;
-                        }).toList();
+                          pagamentos = pagamentos.map((p) {
+                            p.statusNome = 'Atrasado';
+                            return p;
+                          }).toList();
 
-                        atualizarNomesAssociados(
-                          pagamentosProvider.mensalidades!.pagamentosAtrasados,
-                        );
-                      });
-                    },
+                          atualizarNomesAssociados(
+                            pagamentosProvider
+                                .mensalidades!
+                                .pagamentosAtrasados,
+                          );
+                        });
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildStatusButton(
-                    label:
-                        'Pagos (${pagamentosProvider.mensalidades?.pagamentosPagos.length ?? 0})',
-                    isSelected: statusSelecionado == StatusSelecionado.pagas,
-                    selectedColor: const Color(0xFF0097A7),
-                    unselectedColor: const Color(0xFFB2EBF2),
-                    borderColor: const Color(0xFF0097A7),
-                    onPressed: () {
-                      setState(() {
-                        if (statusSelecionado == StatusSelecionado.pagas) {
-                          return;
-                        }
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildStatusButton(
+                      label:
+                          'Pagos (${pagamentosProvider.mensalidades?.pagamentosPagos.length ?? 0})',
+                      isSelected: statusSelecionado == StatusSelecionado.pagas,
+                      selectedColor: const Color(0xFF0097A7),
+                      unselectedColor: const Color(0xFFB2EBF2),
+                      borderColor: const Color(0xFF0097A7),
+                      onPressed: () {
+                        setState(() {
+                          if (statusSelecionado == StatusSelecionado.pagas) {
+                            return;
+                          }
 
-                        atualizarListagemPagamentos(
-                          pagamentosProvider: pagamentosProvider,
-                          status: StatusSelecionado.pagas,
-                          pagamentosDto:
-                              pagamentosProvider.mensalidades!.pagamentosPagos,
-                          valor: pagamentosProvider
-                              .mensalidades!
-                              .valorTotalPagamentosPagos,
-                        );
+                          atualizarListagemPagamentos(
+                            pagamentosProvider: pagamentosProvider,
+                            status: StatusSelecionado.pagas,
+                            pagamentosDto: pagamentosProvider
+                                .mensalidades!
+                                .pagamentosPagos,
+                            valor: pagamentosProvider
+                                .mensalidades!
+                                .valorTotalPagamentosPagos,
+                          );
 
-                        atualizarNomesAssociados(
-                          pagamentosProvider.mensalidades!.pagamentosPagos,
-                        );
-                      });
-                    },
+                          atualizarNomesAssociados(
+                            pagamentosProvider.mensalidades!.pagamentosPagos,
+                          );
+                        });
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              // A lista agora ocupa todo o espaço restante disponível
-              child: pagamentos.isEmpty
+                ],
+              ),
+              const SizedBox(height: 10),
+              // Não use Expanded em ListView dentro de um SingleChildScrollView
+              // Removido o Expanded que envolvia a ListView
+              pagamentos.isEmpty
                   ? Center(
                       child: Text(
                         'Não há mensalidades ${statusSelecionado!.name}.',
@@ -359,69 +369,66 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                     )
                   : pagamentosProvider.loading
                   ? const Center(child: CircularProgressIndicator())
-                  : Expanded(
-                      child: ListView(
-                        children: nomesAssociados.map((nome) {
-                          return ExpansionTile(
-                            title: Text(
-                              nome,
-                              style: AppTextStylesLogin.primeiroLoginStyle,
-                            ),
-                            subtitle: Text(
-                              'Mensalidades ${statusSelecionado!.name} (${pagamentos.where((c) => c.nomeCompleto == nome).length})',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            children: pagamentos.where((p) => p.nomeCompleto == nome).map((
-                              p,
-                            ) {
-                              return Card(
-                                color: const Color.fromARGB(255, 226, 223, 225),
-                                child: CheckboxListTile(
-                                  title: Center(
-                                    child: Text(
-                                      p.nomeCompleto,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
-                                    'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
-                                    '${p.dataPagamento != null ? "${p.dataPagamento!.day.toString().padLeft(2, '0')}/"
-                                              "${p.dataPagamento!.month.toString().padLeft(2, '0')}/"
-                                              "${p.dataPagamento!.year}" : "Não pago"}\n'
-                                    '${p.statusNome}',
+                  : Column(
+                      // <-- Usando Column em vez de Expanded para a lista
+                      children: nomesAssociados.map((nome) {
+                        return ExpansionTile(
+                          title: Text(
+                            nome,
+                            style: AppTextStylesLogin.primeiroLoginStyle,
+                          ),
+                          subtitle: Text(
+                            'Mensalidades ${statusSelecionado!.name} (${pagamentos.where((c) => c.nomeCompleto == nome).length})',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          children: pagamentos.where((p) => p.nomeCompleto == nome).map((
+                            p,
+                          ) {
+                            return Card(
+                              color: const Color.fromARGB(255, 226, 223, 225),
+                              child: CheckboxListTile(
+                                title: Center(
+                                  child: Text(
+                                    p.nomeCompleto,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  secondary: const Icon(
-                                    Icons.monetization_on_rounded,
-                                  ),
-                                  activeColor: AppDefaultStyles.rotaractColor,
-                                  checkColor: Colors.white,
-                                  value: selecionados.contains(p),
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      if (value!) {
-                                        selecionados.add(p);
-                                      } else {
-                                        selecionados.remove(p);
-                                      }
-                                    });
-                                  },
                                 ),
-                              );
-                            }).toList(),
-                          );
-                        }).toList(),
-                      ),
+                                subtitle: Text(
+                                  'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
+                                  'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
+                                  '${p.dataPagamento != null ? "${p.dataPagamento!.day.toString().padLeft(2, '0')}/"
+                                            "${p.dataPagamento!.month.toString().padLeft(2, '0')}/"
+                                            "${p.dataPagamento!.year}" : "Não pago"}\n'
+                                  '${p.statusNome}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                secondary: const Icon(
+                                  Icons.monetization_on_rounded,
+                                ),
+                                activeColor: AppDefaultStyles.rotaractColor,
+                                checkColor: Colors.white,
+                                value: selecionados.contains(p),
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    if (value!) {
+                                      selecionados.add(p);
+                                    } else {
+                                      selecionados.remove(p);
+                                    }
+                                  });
+                                },
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      }).toList(),
                     ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Padding(

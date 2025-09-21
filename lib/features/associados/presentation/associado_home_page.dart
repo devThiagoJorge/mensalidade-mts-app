@@ -51,7 +51,6 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
 
     return Scaffold(
       body: SingleChildScrollView(
-        // <--- Adicionado SingleChildScrollView
         child: Padding(
           padding: const EdgeInsets.only(left: 16.0, right: 16.0),
           child: associadoProvider.loading
@@ -72,7 +71,6 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Usando Expanded para os botões de filtro
                         Expanded(
                           child: _buildStatusButton(
                             label:
@@ -141,9 +139,6 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
                         ),
                       ],
                     ),
-                    // O ListView precisa de um tamanho fixo, então usamos um
-                    // Expanded para que ele preencha o restante da tela
-                    // Note que o SingleChildScrollView foi movido para fora da Column
                     if (pagamentos.isEmpty)
                       const Padding(
                         padding: EdgeInsets.only(top: 30.0),
@@ -155,11 +150,8 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
                         ),
                       )
                     else
-                      // Se a lista não estiver vazia, exibe a lista de pagamentos
                       SizedBox(
-                        height:
-                            MediaQuery.of(context).size.height *
-                            0.5, // Exemplo de altura fixa
+                        height: MediaQuery.of(context).size.height * 0.5,
                         child: ListView.separated(
                           separatorBuilder: (context, index) =>
                               const SizedBox(height: 15),
