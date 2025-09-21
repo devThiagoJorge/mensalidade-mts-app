@@ -185,7 +185,6 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    // <-- Usando Expanded para o DropdownButtonFormField
                     child: DropdownButtonFormField<OpcoesDropDown>(
                       initialValue: valorSelecionado,
                       hint: const Text('Selecione uma opção'),
@@ -212,6 +211,8 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                           for (var item in opcoesDropDown) {
                             item.ativo = (item == novoValor);
                           }
+                          // Reseta a visualização para a lista de pagamentos pendentes após a mudança no dropdown.
+                          statusSelecionado = StatusSelecionado.pendentes;
                         });
 
                         final property = '${novoValor.property}=true';
@@ -223,15 +224,21 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                         if (!mounted) return;
 
                         setState(() {
-                          pagamentos = pagamentosProvider
-                              .mensalidades!
-                              .pagamentosPendentes;
-
-                          statusSelecionado = StatusSelecionado.pendentes;
-
-                          valorTotal = pagamentosProvider
-                              .mensalidades!
-                              .valorTotalPagamentosPendentes;
+                          atualizarListagemPagamentos(
+                            pagamentosProvider: pagamentosProvider,
+                            status: StatusSelecionado.pendentes,
+                            pagamentosDto: pagamentosProvider
+                                .mensalidades!
+                                .pagamentosPendentes,
+                            valor: pagamentosProvider
+                                .mensalidades!
+                                .valorTotalPagamentosPendentes,
+                          );
+                          atualizarNomesAssociados(
+                            pagamentosProvider
+                                .mensalidades!
+                                .pagamentosPendentes,
+                          );
                         });
                       },
                     ),
@@ -255,11 +262,6 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                       borderColor: const Color(0xFFFBC02D),
                       onPressed: () {
                         setState(() {
-                          if (statusSelecionado ==
-                              StatusSelecionado.pendentes) {
-                            return;
-                          }
-
                           atualizarListagemPagamentos(
                             pagamentosProvider: pagamentosProvider,
                             status: StatusSelecionado.pendentes,
@@ -358,8 +360,6 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                 ],
               ),
               const SizedBox(height: 10),
-              // Não use Expanded em ListView dentro de um SingleChildScrollView
-              // Removido o Expanded que envolvia a ListView
               pagamentos.isEmpty
                   ? Center(
                       child: Text(
