@@ -57,13 +57,8 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
               ? const Center(child: CircularProgressIndicator())
               : Column(
                   children: [
-                    const SizedBox(height: 15),
-                    const Center(
-                      child: Icon(
-                        Icons.account_balance_wallet_outlined,
-                        size: 80,
-                        color: Colors.blueGrey,
-                      ),
+                    Center(
+                      child: Image.asset('assets/images/logo.png', height: 120),
                     ),
                     const SizedBox(height: 15),
                     Center(
