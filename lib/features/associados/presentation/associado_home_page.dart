@@ -57,9 +57,15 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
               ? const Center(child: CircularProgressIndicator())
               : Column(
                   children: [
-                    Center(
-                      child: Image.asset('assets/images/logo.png', height: 160),
+                    const SizedBox(height: 15),
+                    const Center(
+                      child: Icon(
+                        Icons.account_balance_wallet_outlined,
+                        size: 80,
+                        color: Colors.blueGrey,
+                      ),
                     ),
+                    const SizedBox(height: 15),
                     Center(
                       child: Text(
                         associadoProvider.associado?.gestao ??
@@ -139,6 +145,7 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 10),
                     if (pagamentos.isEmpty)
                       const Padding(
                         padding: EdgeInsets.only(top: 30.0),
@@ -152,33 +159,26 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
                     else
                       SizedBox(
                         height: MediaQuery.of(context).size.height * 0.5,
-                        child: ListView.separated(
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 15),
-                          padding: const EdgeInsets.fromLTRB(0, 30, 0, 30),
+                        child: ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                           itemCount: pagamentos.length,
                           itemBuilder: (context, index) {
                             final p = pagamentos[index];
                             return Card(
                               color: const Color.fromARGB(255, 226, 223, 225),
+                              margin: const EdgeInsets.symmetric(vertical: 8),
                               child: ListTile(
-                                title: Center(
-                                  child: Text(
-                                    p.statusNome,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
-                                  'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
-                                  'Pagamento: ${p.dataPagamento != null ? "${p.dataPagamento!.day.toString().padLeft(2, '0')}/"
-                                            "${p.dataPagamento!.month.toString().padLeft(2, '0')}/"
-                                            "${p.dataPagamento!.year}" : "Não pago"}',
+                                leading: const Icon(Icons.receipt_long),
+                                title: Text(
+                                  'Referente: ${p.referenteMes}/${p.referenteAno}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
+                                ),
+                                subtitle: Text(
+                                  'Vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
+                                  'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
+                                  'Status: ${p.statusNome}',
                                 ),
                               ),
                             );
@@ -206,7 +206,7 @@ class _AssociadoHomePageState extends State<AssociadoHomePage> {
         foregroundColor: isSelected ? Colors.white : Colors.black,
         side: BorderSide(color: borderColor, width: 2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        padding: const EdgeInsets.symmetric(vertical: 35),
+        padding: const EdgeInsets.symmetric(vertical: 12),
       ),
       onPressed: onPressed,
       child: Text(
