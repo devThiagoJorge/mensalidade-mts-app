@@ -168,7 +168,6 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
 
     return Scaffold(
       body: SingleChildScrollView(
-        // <-- Envolvi a Column em um SingleChildScrollView
         child: Padding(
           padding: const EdgeInsets.only(left: 16.0, right: 16.0),
           child: Column(
@@ -224,6 +223,7 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                         if (!mounted) return;
 
                         setState(() {
+                          // A lista a ser mostrada agora é sempre a de Pendentes.
                           atualizarListagemPagamentos(
                             pagamentosProvider: pagamentosProvider,
                             status: StatusSelecionado.pendentes,
@@ -262,6 +262,11 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                       borderColor: const Color(0xFFFBC02D),
                       onPressed: () {
                         setState(() {
+                          if (statusSelecionado ==
+                              StatusSelecionado.pendentes) {
+                            return;
+                          }
+
                           atualizarListagemPagamentos(
                             pagamentosProvider: pagamentosProvider,
                             status: StatusSelecionado.pendentes,
@@ -370,57 +375,55 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
                   : pagamentosProvider.loading
                   ? const Center(child: CircularProgressIndicator())
                   : Column(
-                      // <-- Usando Column em vez de Expanded para a lista
                       children: nomesAssociados.map((nome) {
+                        final pagamentosDoAssociado = pagamentos
+                            .where((p) => p.nomeCompleto == nome)
+                            .toList();
                         return ExpansionTile(
                           title: Text(
                             nome,
                             style: AppTextStylesLogin.primeiroLoginStyle,
                           ),
                           subtitle: Text(
-                            'Mensalidades ${statusSelecionado!.name} (${pagamentos.where((c) => c.nomeCompleto == nome).length})',
+                            'Mensalidades ${statusSelecionado!.name} (${pagamentosDoAssociado.length})',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          children: pagamentos.where((p) => p.nomeCompleto == nome).map((
-                            p,
-                          ) {
+                          children: pagamentosDoAssociado.map((p) {
                             return Card(
                               color: const Color.fromARGB(255, 226, 223, 225),
-                              child: CheckboxListTile(
-                                title: Center(
-                                  child: Text(
-                                    p.nomeCompleto,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              child: ListTile(
+                                leading: const Icon(
+                                  Icons.monetization_on_rounded,
                                 ),
-                                subtitle: Text(
-                                  'Data vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
-                                  'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
-                                  '${p.dataPagamento != null ? "${p.dataPagamento!.day.toString().padLeft(2, '0')}/"
-                                            "${p.dataPagamento!.month.toString().padLeft(2, '0')}/"
-                                            "${p.dataPagamento!.year}" : "Não pago"}\n'
-                                  '${p.statusNome}',
+                                title: Text(
+                                  'Referente: ${p.referenteMes}/${p.referenteAno}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                secondary: const Icon(
-                                  Icons.monetization_on_rounded,
+                                subtitle: Text(
+                                  'Valor: R\$ ${p.valor.toStringAsFixed(2)}\n'
+                                  'Vencimento: ${p.diaVencimento}/${p.referenteMes}/${p.referenteAno}\n'
+                                  'Status: ${p.statusNome}',
                                 ),
-                                activeColor: AppDefaultStyles.rotaractColor,
-                                checkColor: Colors.white,
-                                value: selecionados.contains(p),
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    if (value!) {
-                                      selecionados.add(p);
-                                    } else {
-                                      selecionados.remove(p);
-                                    }
-                                  });
-                                },
+                                trailing: Checkbox(
+                                  activeColor: AppDefaultStyles.rotaractColor,
+                                  checkColor: Colors.white,
+                                  value: selecionados.contains(p),
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      if (value!) {
+                                        selecionados.add(p);
+                                      } else {
+                                        selecionados.remove(p);
+                                      }
+                                    });
+                                  },
+                                ),
                               ),
                             );
                           }).toList(),
@@ -431,43 +434,36 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            style: OutlinedButton.styleFrom(
+      floatingActionButton: selecionados.isNotEmpty
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                AtualizarPagamentoCommand command = AtualizarPagamentoCommand(
+                  idsPagamentos: selecionados
+                      .map((p) => p.idPagamento)
+                      .toList(),
+                  statusPagamentoId:
+                      statusSelecionado != StatusSelecionado.pagas
+                      ? StatusPagamento.pago.value
+                      : StatusPagamento.pendente.value,
+                  dataPagamento: null,
+                );
+                _openModalPagamentos(command);
+              },
+              label: Text(
+                statusSelecionado != StatusSelecionado.pagas
+                    ? 'Pagar (${selecionados.length})'
+                    : 'Marcar como pendente (${selecionados.length})',
+              ),
+              icon: Icon(
+                statusSelecionado != StatusSelecionado.pagas
+                    ? Icons.payment
+                    : Icons.undo,
+              ),
               backgroundColor: AppDefaultStyles.rotaractColor,
               foregroundColor: Colors.white,
-              side: const BorderSide(
-                color: AppDefaultStyles.rotaractColor,
-                width: 2,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 20),
-            ),
-            onPressed: () async {
-              AtualizarPagamentoCommand command = AtualizarPagamentoCommand(
-                idsPagamentos: selecionados.map((p) => p.idPagamento).toList(),
-                statusPagamentoId: statusSelecionado != StatusSelecionado.pagas
-                    ? StatusPagamento.pago.value
-                    : StatusPagamento.pendente.value,
-                dataPagamento: null,
-              );
-              _openModalPagamentos(command);
-            },
-            child: Text(
-              statusSelecionado != StatusSelecionado.pagas
-                  ? 'Pagar (${selecionados.length})'
-                  : 'Marcar como pendente (${selecionados.length})',
-              style: AppTextStylesLogin.buttonLoginStyle,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-      ),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -485,7 +481,7 @@ class _TesoureiroHomePagePageState extends State<TesoureiroHomePage> {
         foregroundColor: isSelected ? Colors.white : Colors.black,
         side: BorderSide(color: borderColor, width: 2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        padding: const EdgeInsets.symmetric(vertical: 35),
+        padding: const EdgeInsets.symmetric(vertical: 20),
       ),
       onPressed: onPressed,
       child: Text(
