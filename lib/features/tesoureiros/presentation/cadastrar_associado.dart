@@ -1,4 +1,3 @@
-// ... seu código anterior
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mensalidade_mts_app/core/components/snackbar.dart';
@@ -7,6 +6,10 @@ import 'package:mensalidade_mts_app/core/componentsStyle/login/app_text_styles_l
 import 'package:mensalidade_mts_app/features/associados/commands/criar_associado_command.dart';
 import 'package:mensalidade_mts_app/features/associados/providers/associado_provider.dart';
 import 'package:provider/provider.dart';
+
+// Definindo espaçamento vertical padrão para maior consistência
+const double _verticalSpace = 20.0;
+const double _paddingHorizontal = 16.0;
 
 class CadastroAssociadoPage extends StatefulWidget {
   const CadastroAssociadoPage({super.key});
@@ -44,6 +47,7 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Definindo o ícone do Switch fora do build para evitar recriação desnecessária
     const WidgetStateProperty<Icon> thumbIcon =
         WidgetStateProperty<Icon>.fromMap(<WidgetStatesConstraint, Icon>{
           WidgetState.selected: Icon(Icons.check),
@@ -60,65 +64,52 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: _paddingHorizontal),
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
             child: Column(
               children: [
+                const SizedBox(height: _verticalSpace * 2),
                 Center(
                   child: Image.asset('assets/images/logo.png', height: 160),
                 ),
-                const SizedBox(height: 40),
-                // Campo EMAIL
-                TextFormField(
+                const SizedBox(height: _verticalSpace),
+                // Reutilizando o widget para os campos de texto
+                _CustomTextField(
                   controller: emailController,
+                  labelText: 'Email',
+                  hintText: 'Informe o seu e-mail',
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Informe o seu e-mail',
-                    labelText: 'Email',
-                  ),
                   validator: (value) => value == null || value.isEmpty
                       ? 'Informe o e-mail'
                       : null,
                 ),
-
-                const SizedBox(height: 20),
-                TextFormField(
+                const SizedBox(height: _verticalSpace),
+                _CustomTextField(
                   controller: primeiroNomeController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Informe o primeiro nome',
-                    labelText: 'Primeiro nome',
-                  ),
+                  labelText: 'Primeiro nome',
+                  hintText: 'Informe o primeiro nome',
                   validator: (value) => value == null || value.isEmpty
                       ? 'Informe o primeiro nome'
                       : null,
                 ),
-                const SizedBox(height: 20),
-                TextFormField(
+                const SizedBox(height: _verticalSpace),
+                _CustomTextField(
                   controller: sobrenomeController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Informe o sobrenome',
-                    labelText: 'Sobrenome',
-                  ),
+                  labelText: 'Sobrenome',
+                  hintText: 'Informe o sobrenome',
                   validator: (value) => value == null || value.isEmpty
                       ? 'Informe o sobrenome'
                       : null,
                 ),
-
-                const SizedBox(height: 20),
-                TextFormField(
+                const SizedBox(height: _verticalSpace),
+                _CustomTextField(
                   controller: diaVencimentoMensalidadeController,
+                  labelText: 'Dia do vencimento da mensalidade',
+                  hintText: 'Dia do vencimento da mensalidade',
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Dia do vencimento da mensalidade',
-                    labelText: 'Dia do vencimento da mensalidade',
-                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe o Dia do vencimento da mensalidade';
@@ -133,10 +124,10 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                     return null;
                   },
                 ),
-                // AQUI COMEÇA O PADDING CORRETO PARA O SWITCH
-                const SizedBox(height: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: _verticalSpace),
+                // Melhorando o alinhamento do texto e do switch
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
                       'Gerar a mensalidade desde o começo da gestão?',
@@ -157,9 +148,7 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 40),
-
+                const SizedBox(height: _verticalSpace),
                 provider.loading
                     ? const CircularProgressIndicator(
                         color: AppTextStylesLogin.rotaractColor,
@@ -181,7 +170,6 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                               final int diaVencimentoPagamento = int.parse(
                                 diaVencimentoMensalidadeController.text,
                               );
-
                               CriarAssociadoCommand command =
                                   CriarAssociadoCommand(
                                     primeiroNome: primeiroNomeController.text,
@@ -191,9 +179,7 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                                         diaVencimentoPagamento,
                                     gerarDesdeComecoGestao: isInicioGestao,
                                   );
-
                               await provider.cadastrarAssociado(command);
-
                               if (provider.response!.success) {
                                 SnackbarHelper.mostrarSucesso(
                                   context,
@@ -214,7 +200,7 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                           ),
                         ),
                       ),
-                const SizedBox(height: 12),
+                const SizedBox(height: _verticalSpace),
               ],
             ),
           ),
@@ -228,6 +214,42 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
     sobrenomeController.clear();
     emailController.clear();
     diaVencimentoMensalidadeController.clear();
-    isInicioGestao = false;
+    setState(() {
+      isInicioGestao = false;
+    });
+  }
+}
+
+// Widget reutilizável para os campos de texto
+class _CustomTextField extends StatelessWidget {
+  const _CustomTextField({
+    required this.controller,
+    required this.labelText,
+    required this.hintText,
+    this.keyboardType,
+    this.inputFormatters,
+    this.validator,
+  });
+
+  final TextEditingController controller;
+  final String labelText;
+  final String hintText;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+  final String? Function(String?)? validator;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      decoration: InputDecoration(
+        border: const OutlineInputBorder(),
+        hintText: hintText,
+        labelText: labelText,
+      ),
+      validator: validator,
+    );
   }
 }
