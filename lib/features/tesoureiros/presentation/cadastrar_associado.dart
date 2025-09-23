@@ -127,13 +127,14 @@ class _CadastroAssociadoPageState extends State<CadastroAssociadoPage> {
                 const SizedBox(height: _verticalSpace),
                 // Melhorando o alinhamento do texto e do switch
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Gerar a mensalidade desde o começo da gestão?',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    const Expanded(
+                      child: Text(
+                        'Gerar a mensalidade desde o começo da gestão?',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     Switch(
