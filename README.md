@@ -12,7 +12,18 @@ O objetivo do sistema é trazer **transparência** à gestão das mensalidades, 
     - Sistema de login com roles de permissão (Associado, Admin e Tesoureiro).
     - O tesoureiro pode adicionar um novo tesoureiro, para a nova gestão, mas no momento que fizer isso, ele perderá sua role de Tesoureiro, passando a ser um Associado.
  
-
 - **.NET:** Será desenvolvido uma API em .NET utilizando o padrão de projeto Arquitetura Três Camadas**.**
 - **Banco de dados:** Será usado o banco de dados PostgreSQL, sendo usado no  Supabase
 - **Aplicativo: Flutter** (desenvolvimento híbrido).
+
+**As hospedagens:**
+- Banco de dados: Supabase (versão free)
+- Front-end: Github pages
+- Back-end: Render
+
+**Permissões do sistema**
+- Associado: apenas consegue 
+- Tesoureiro
+- Admin
+
+  
