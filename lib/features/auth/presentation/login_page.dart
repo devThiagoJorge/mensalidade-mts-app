@@ -18,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _senhaVisivel = false;
 
   // Storage seguro
   final storage = const FlutterSecureStorage();
@@ -108,11 +109,23 @@ class _LoginPageState extends State<LoginPage> {
                     width: 360,
                     child: TextFormField(
                       controller: passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
+                      obscureText: !_senhaVisivel,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
                         hintText: 'Informe a senha',
                         labelText: 'Senha',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _senhaVisivel
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _senhaVisivel = !_senhaVisivel;
+                            });
+                          },
+                        ),
                       ),
                       validator: (value) => value == null || value.isEmpty
                           ? 'Informe a senha'
